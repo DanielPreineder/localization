@@ -312,6 +312,19 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 	}
 	else
 	{
+		TokenContainerCit titer = msg.tokens->cbegin();
+		while (titer != msg.tokens->cend())
+		{
+			if (titer->second->variableType == VARIABLETYPE_MESSAGE)
+			{
+				// we do not allow nested message tokens to avoid endless recursion
+				char tmp[128];
+				sprintf_s(tmp, "Message ID %d contains a [messageid] tag and therefore cannot be used as a [messageid] value", msgID );
+				PyErr_SetString( PyExc_ValueError, tmp );
+				return false;
+			}
+			titer++;
+		}
 		std::wstringstream text;
 		if ( Parse( msg.text, lang, *( msg.tokens ), kwargs, text ) )
 		{
