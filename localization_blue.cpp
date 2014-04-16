@@ -119,9 +119,16 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 				Py_ssize_t pos = 0;
 				while ( PyDict_Next( metaData, &pos, &key, &val ) )
 				{
-					std::string  k( PyString_AS_STRING( key ) );
-					std::wstring v( PyUnicode_AS_UNICODE( val ), PyUnicode_GET_SIZE( val ) );
-					md->metaData->insert( MetaData::value_type( k, v ) );
+					// temporary bug in pickle processing means that metadata keys are being exported as unicode.
+					// Convert to string until this is fixed.
+					PyObject *tmp = PyObject_Str(key);
+					if (tmp)
+					{
+						std::string  k( PyString_AS_STRING( tmp ) );
+						Py_DECREF(tmp);
+						std::wstring v( PyUnicode_AS_UNICODE( val ), PyUnicode_GET_SIZE( val ) );
+						md->metaData->insert( MetaData::value_type( k, v ) );
+					}
 				}
 			}
 
