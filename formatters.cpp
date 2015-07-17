@@ -122,6 +122,13 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 				return false;
 			}
 
+			size_t len = PySequence_Fast_GET_SIZE( linkData );
+			if (len == 0)
+			{
+				Py_DECREF( linkData );
+				return false;
+			}
+
 			PyObject* tmp = PyObject_Unicode( PySequence_Fast_GET_ITEM( linkData, 0 ) );
 			if ( ! tmp )
 			{
@@ -132,7 +139,6 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 
 			Py_XDECREF( tmp );
 
-			size_t len = PySequence_Fast_GET_SIZE( linkData );
 			for ( size_t i = 1; i < len; ++i )
 			{
 				if ( i > 1 )
