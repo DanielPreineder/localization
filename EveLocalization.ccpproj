@@ -23,7 +23,7 @@ ClCompile:
   PreprocessorDefinitions:
   - UNICODE
   - _UNICODE
-  - BLUE_DLL_NAME=EveLocalization
+  - BLUE_DLL_NAME=_evelocalization
 
 # Linker settings for all configurations
 Link:
@@ -37,7 +37,7 @@ Configurations:
     Imports:
     - ../../../carbon/src/blue/uses_blue.yaml
     General: 
-      TargetName: $(ProjectName)_d
+      TargetName: _evelocalization_d
       TargetExt: .dll
       LinkIncremental: true
       # The config type is used for selecting the manifest file - usually the same as the configuration
@@ -54,7 +54,7 @@ Configurations:
     - ../../../carbon/src/blue/uses_blue.yaml
     - EveLocalization_release.yaml
     General:
-      TargetName: $(ProjectName)
+      TargetName: _evelocalization
       TargetExt: .dll
 
   Release_26|Win32,x64:
@@ -62,7 +62,7 @@ Configurations:
     - ../../../carbon/src/blue/uses_blue_26.yaml
     - EveLocalization_release.yaml
     General:
-      TargetName: $(ProjectName)
+      TargetName: _evelocalization
       TargetExt: .pyd
 
   Release_27|Win32,x64:
@@ -70,5 +70,5 @@ Configurations:
     - ../../../carbon/src/blue/uses_blue_27.yaml
     - EveLocalization_release.yaml
     General:
-      TargetName: $(ProjectName)
+      TargetName: _evelocalization
       TargetExt: .pyd

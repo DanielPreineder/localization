@@ -13,7 +13,7 @@
 #error Please add BLUE_DLL_NAME=<PythonModuleName> to compiler preprocessor definitions (/D)
 #endif
 
-const char* g_moduleName = "EveLocalization";
+const char* g_moduleName = "_evelocalization";
 LocalizationSettings g_settings;
 
 // -------------------------------------------------------------

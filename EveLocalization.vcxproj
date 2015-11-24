@@ -148,42 +148,42 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.dll</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug</CcpConfigType>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../autobuild/$(ProjectName)/exefile/$(Platform)/$(PlatformToolset)/</OutDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_evelocalization_d</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">True</LinkIncremental>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">.pyd</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">../../autobuild/$(ProjectName)/python_27/$(Platform)/$(PlatformToolset)/</OutDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../autobuild/$(ProjectName)/exefile/$(Platform)/$(PlatformToolset)/</OutDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">.pyd</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">../../autobuild/$(ProjectName)/python_27/$(Platform)/$(PlatformToolset)/</OutDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">.pyd</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">../../autobuild/$(ProjectName)/python_26/$(Platform)/$(PlatformToolset)/</OutDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.dll</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Debug</CcpConfigType>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../autobuild/$(ProjectName)/exefile/$(Platform)/$(PlatformToolset)/</OutDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_evelocalization_d</TargetName>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">True</LinkIncremental>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">.pyd</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">../../autobuild/$(ProjectName)/python_26/$(Platform)/$(PlatformToolset)/</OutDir>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.dll</TargetExt>
     <CcpConfigType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release</CcpConfigType>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">_evelocalization</TargetName>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../autobuild/$(ProjectName)/exefile/$(Platform)/$(PlatformToolset)/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_DEBUG;CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\..\carbon\src\stackless\include;..\..\..\carbon\src\stackless\stackless;$(CcpSdkPath)\telemetry\2.1A3\include;..\..\..\carbon\src\stackless\pc;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -211,7 +211,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_27|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(CcpSdkPath)\telemetry\2.1A3\include;$(CcpSdkPath)\Python\27\include;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -239,7 +239,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\..\carbon\src\stackless\include;..\..\..\carbon\src\stackless\stackless;$(CcpSdkPath)\telemetry\2.1A3\include;..\..\..\carbon\src\stackless\pc;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -267,7 +267,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_27|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(CcpSdkPath)\telemetry\2.1A3\include;$(CcpSdkPath)\Python\27_64\include;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -295,7 +295,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_26|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(CcpSdkPath)\telemetry\2.1A3\include;$(CcpSdkPath)\Python\26\include;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -323,7 +323,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>_DEBUG;CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\..\carbon\src\stackless\include;..\..\..\carbon\src\stackless\stackless;$(CcpSdkPath)\telemetry\2.1A3\include;..\..\..\carbon\src\stackless\pc;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -351,7 +351,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_26|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(CcpSdkPath)\telemetry\2.1A3\include;$(CcpSdkPath)\Python\26_64\include;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
@@ -379,7 +379,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=EveLocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CCP_STACKLESS=1;BLUE_WITH_PYTHON=1;NDEBUG;BOOST_AUTO_LINK_NOMANGLE;UNICODE;_UNICODE;BLUE_DLL_NAME=_evelocalization;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\..\carbon\src\stackless\include;..\..\..\carbon\src\stackless\stackless;$(CcpSdkPath)\telemetry\2.1A3\include;..\..\..\carbon\src\stackless\pc;$(CcpSdkPath)\telemetry\2.0k\include;$(CcpSdkPath)\boost\1_45_0;.;$(CcpBranchPath)/carbon/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>True</MultiProcessorCompilation>
