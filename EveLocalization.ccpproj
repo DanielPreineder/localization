@@ -35,7 +35,7 @@ Link:
 Configurations:
   Debug|Win32,x64:
     Imports:
-    - ../../../carbon/src/blue/uses_blue.yaml
+    - ../../../carbon/src/blue/Include/uses_blue.yaml
     General: 
       TargetName: _evelocalization_d
       TargetExt: .dll
@@ -51,7 +51,7 @@ Configurations:
 
   Release|Win32,x64:
     Imports:
-    - ../../../carbon/src/blue/uses_blue.yaml
+    - ../../../carbon/src/blue/Include/uses_blue.yaml
     - EveLocalization_release.yaml
     General:
       TargetName: _evelocalization
@@ -59,7 +59,7 @@ Configurations:
 
   Release_26|Win32,x64:
     Imports:
-    - ../../../carbon/src/blue/uses_blue_26.yaml
+    - ../../../carbon/src/blue/Include/uses_blue_26.yaml
     - EveLocalization_release.yaml
     General:
       TargetName: _evelocalization
@@ -67,7 +67,7 @@ Configurations:
 
   Release_27|Win32,x64:
     Imports:
-    - ../../../carbon/src/blue/uses_blue_27.yaml
+    - ../../../carbon/src/blue/Include/uses_blue_27.yaml
     - EveLocalization_release.yaml
     General:
       TargetName: _evelocalization
