@@ -2,7 +2,6 @@ ProjectGuid: C74BAD74-2B1A-437C-BB05-BFB611FFE669
 
 Imports:
 - ../../../../../../sdk/Telemetry/3.0.1.1008/telemetry_3.0.1.1008.yaml
-- ../../../../../../sdk/boost/1_45_0/boost_1_45_0.yaml
 - ../../../carbon/src/core_project/core_project.yaml
 - ../../../carbon/src/manifests/manifests.props
 
