@@ -5,7 +5,7 @@
 
 #include "localization.h"
 
-#include <Blue/Include/BlueId.cxx>
+#include <Blue/Include/Blue.cxx>
 
 #include "parser.h"
 
