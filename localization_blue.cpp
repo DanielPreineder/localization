@@ -608,7 +608,7 @@ PyObject* PyGetMetaDataByID( PyObject* module, PyObject* args )
 			if ( cit == mm.cend() )
 			{
 				char tmp[128];
-				sprintf_s(tmp, "Message ID %d does not exists neither in requested nor in fallback language.", messageID );
+				sprintf_s(tmp, "Message ID %llu does not exists neither in requested nor in fallback language.", messageID );
 				PyErr_SetString( PyExc_KeyError, tmp );
 				return NULL;
 			}
@@ -626,7 +626,7 @@ PyObject* PyGetMetaDataByID( PyObject* module, PyObject* args )
 		}
 
 		char tmp[128];
-		sprintf_s(tmp, "Message ID %d does not have metadata for property %s.", messageID, propertyName );
+		sprintf_s(tmp, "Message ID %llu does not have metadata for property %s.", messageID, propertyName );
 		PyErr_SetString( PyExc_KeyError, tmp );
 		return NULL;
 	}
@@ -712,7 +712,7 @@ PyObject* PyGetMessageByID( PyObject* module, PyObject* args, PyObject* kwargs )
 			if ( cit == mm.cend() )
 			{
 				char tmp[128];
-				sprintf_s(tmp, "Message ID %d does not exists neither in requested nor in fallback language.", messageID );
+				sprintf_s(tmp, "Message ID %llu does not exists neither in requested nor in fallback language.", messageID );
 				PyErr_SetString( PyExc_KeyError, tmp );
 				return NULL;
 			}

@@ -291,7 +291,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 		return false;
 	}
 
-	MessageID msgID = PyLong_AsLongLong( value );
+	MessageID msgID = PyLong_AsUnsignedLongLong( value );
 	PyObject* val = NULL;
 	bool ret = NULL;
 
@@ -304,7 +304,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 		if ( cit == mm.cend() )
 		{
 			char tmp[128];
-			sprintf_s(tmp, "Message ID %d does not exists neither in requested nor in fallback language.", msgID );
+			sprintf_s(tmp, "Message ID %llu does not exists neither in requested nor in fallback language.", msgID );
 			PyErr_SetString( PyExc_KeyError, tmp );
 			return false;
 		}
@@ -325,7 +325,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 			{
 				// we do not allow nested message tokens to avoid endless recursion
 				char tmp[128];
-				sprintf_s(tmp, "Message ID %d contains a [messageid] tag and therefore cannot be used as a [messageid] value", msgID );
+				sprintf_s(tmp, "Message ID %llu contains a [messageid] tag and therefore cannot be used as a [messageid] value", msgID );
 				PyErr_SetString( PyExc_ValueError, tmp );
 				return false;
 			}
