@@ -37,9 +37,7 @@ bool Parse( const std::wstring& sourceText, const Language& lang, const TokenCon
 		}
 
 		++epos;
-
-		std::wstring& key = sourceText.substr( pos, epos-pos );
-		TokenContainerCit token = tokens.find( key );
+		TokenContainerCit token = tokens.find( sourceText.substr( pos, epos - pos ) );
 
 		if ( token == tokens.end() )
 		{
@@ -185,7 +183,7 @@ PyObject* CallPropertyHandler( const Token& token, LanguageID langID, PyObject* 
 		ret = PyObject_Call( method, args, tokenKwargs );
 		if ( ret && ( token.flags & TOKENFLAG_LINKIFY ) == TOKENFLAG_LINKIFY )
 		{
-			ret = PyObject_CallMethod( cit->second, "Linkify", "OO", value, ret );
+			ret = PyObject_CallMethod( cit->second, (char*)"Linkify", (char*)"OO", value, ret );
 		}
 		Py_XDECREF( method );
 	}

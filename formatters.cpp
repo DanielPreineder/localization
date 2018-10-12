@@ -267,8 +267,9 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 
 	setlocale( LC_TIME, LanguageIDToLocaleName( lang.id ) );
 	wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, format, &timeInfo );
+	std::wstring buf(buffer);
 
-	return SimpleValueFormatter( token, lang, std::wstring( buffer ), kwargs, retVal );
+	return SimpleValueFormatter( token, lang, buf, kwargs, retVal );
 }
 
 // -------------------------------------------------------------
