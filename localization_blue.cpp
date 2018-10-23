@@ -76,12 +76,6 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 				return NULL;
 			}
 
-			if ( ! PyLong_Check( key ) && ! PyInt_Check( key ) )
-			{
-				PyErr_SetString( PyExc_TypeError, "Localization::LoadMessageData - dictionary must be keyed on int" );
-				return NULL;
-			}
-
 			if ( ! PyTuple_Check( value ) || PyTuple_Size( value ) != 3 )
 			{
 				PyErr_SetString( PyExc_TypeError, 
@@ -89,7 +83,21 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 				return NULL;
 			}
 
-			MessageID id = PyLong_AsLongLong( key );
+			MessageID id;
+			if ( PyLong_Check( key ) )
+			{
+				id = PyLong_AsUnsignedLongLong( key );
+			}
+			else if ( PyInt_Check( key ) )
+			{
+				id = PyInt_AsUnsignedLongLongMask( key );
+			}
+			else
+			{
+				PyErr_SetString( PyExc_TypeError, "Localization::LoadMessageData - dictionary must be keyed on int or long" );
+				return NULL;
+			}
+
 			MessageData* md = CCP_NEW( "PyLoadMessageData/md" ) MessageData;
 
 			// We use PyTuple_GET_ITEM for speed - we've already checked that we have a tuple

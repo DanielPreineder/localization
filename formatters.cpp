@@ -286,13 +286,22 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 // -------------------------------------------------------------
 bool MessageFormatter( const Token& token, const Language& lang, PyObject* value, PyObject* kwargs, std::wstringstream& retVal )
 {
-	if ( ! PyLong_Check( value ) && ! PyInt_Check( value ) )
+	MessageID msgID;
+
+	if ( PyLong_Check( value ) )
+	{
+		msgID = PyLong_AsUnsignedLongLong( value );
+	}
+	else if ( PyInt_Check( value ) )
+	{
+		msgID = PyInt_AsUnsignedLongLongMask( value );
+	}
+	else
 	{
 		PyErr_SetString( PyExc_TypeError, "messageid variable type expects a valid messageID as parameter." );
 		return false;
 	}
 
-	MessageID msgID = PyLong_AsUnsignedLongLong( value );
 	PyObject* val = NULL;
 	bool ret = NULL;
 
