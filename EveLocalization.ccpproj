@@ -18,7 +18,7 @@ ClCompile:
   BufferSecurityCheck: false
   PrecompiledHeader: Use
   PrecompiledHeaderFile: stdafx.h
-  PrecompiledHeaderOutputFile: $(IntDir)trinity.pch
+  PrecompiledHeaderOutputFile: $(IntDir)$(TargetName).pch
   PreprocessorDefinitions:
   - UNICODE
   - _UNICODE
