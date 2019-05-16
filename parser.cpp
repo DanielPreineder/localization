@@ -88,7 +88,9 @@ bool ProcessToken( const Token& token, const Language& lang, PyObject* kwargs, s
 		// report error if we have not done so.
 		if ( ! PyErr_Occurred() )
 		{
-			PyErr_SetString( PyExc_RuntimeError, "Token has no value." );
+		    std::stringstream errStr;
+		    errStr << "Failed to find the value for '" << token.variableName << "' in kwargs or via handler for of type " << token.variableType << " for property with name '" << token.propertyName << "'.";
+		    PyErr_SetString( PyExc_RuntimeError, errStr.str().c_str() );
 		}
 		retVal << "ERROR parsing message: Token has no value";
 		return false;
