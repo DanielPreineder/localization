@@ -13,6 +13,7 @@ enum LanguageID
 {
 	LANGUAGEID_ENGLISH_US          = 1033,
 	LANGUAGEID_JAPANESE            = 1041,
+	LANGUAGEID_KOREAN              = 1042,
 	LANGUAGEID_RUSSIAN             = 1049,
 	LANGUAGEID_GERMAN              = 1031,
 	LANGUAGEID_FRENCH              = 1036,

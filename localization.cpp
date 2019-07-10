@@ -309,6 +309,7 @@ LanguageID CodeToLanguageID( const char* code )
 	if ( 0 == _stricmp( code, "en-us" ) )   return LANGUAGEID_ENGLISH_US;
 	if ( 0 == _stricmp( code, "en" ) )      return LANGUAGEID_ENGLISH_US;
 	if ( 0 == _stricmp( code, "ja" ) )      return LANGUAGEID_JAPANESE;
+	if ( 0 == _stricmp( code, "ko" ) )      return LANGUAGEID_KOREAN;
 	if ( 0 == _stricmp( code, "zh" ) )      return LANGUAGEID_CHINESE_SIMPLIFIED;
 	if ( 0 == _stricmp( code, "de" ) )      return LANGUAGEID_GERMAN;
 	if ( 0 == _stricmp( code, "fr" ) )		return LANGUAGEID_FRENCH;
@@ -349,6 +350,8 @@ const char* LanguageIDToCode( LanguageID languageID )
 			return "es";
 		case LANGUAGEID_JAPANESE:
 			return "ja";
+		case LANGUAGEID_KOREAN:
+		    return "ko";
 		case LANGUAGEID_SYSTEM_DEFAULT:
 			return "";
 		case LANGUAGEID_ENGLISH_US:
@@ -384,6 +387,8 @@ const char* LanguageIDToLocaleName( LanguageID languageID )
 			return "spanish";
 		case LANGUAGEID_JAPANESE:
 			return "japanese";
+		case LANGUAGEID_KOREAN:
+		    return "korean";
 		case LANGUAGEID_ENGLISH_US:
 		default:
 			return "english";
