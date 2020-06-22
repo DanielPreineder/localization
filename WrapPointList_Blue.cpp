@@ -36,7 +36,7 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
 	for ( size_t i = 0; i < wrapPointList->Size(); ++i )
 	{
 		isWhitespace = (*wrapPointList)[i].fWhiteSpace;
-		if ( (*wrapPointList)[i].fSoftBreak || ( prevWhitespace && ! isWhitespace ) )
+		if ( i > 0 && ( (*wrapPointList)[i].fSoftBreak || ( prevWhitespace && ! isWhitespace ) ) )
 		{
 			PyObject* val = PyInt_FromLong( (long) i );
 			PyList_Append( retVal, val );
