@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <sstream>
+
+#ifdef _WIN32
 // Modify the following defines if you have to target a platform prior to the ones specified below.
 // Refer to MSDN for the latest info on corresponding values for different platforms.
 #ifndef WINVER				// Allow use of features specific to Windows XP or later.
@@ -23,13 +26,22 @@
 #endif
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+
+#define NOMINMAX
+
 // Windows Header Files:
 #include <windows.h>
 
-#include "BlueExposure/include/BlueExposure.h"
-#include <Blue/Include/Blue.h>
-#include <Blue/Include/IBluePython.h>
-#include <Blue/Include/IBlueOS.h>
-#include "blue/include/BlueStatistics.h"
+#include <usp10.h>
 
-#include <sstream>
+#elif defined(__APPLE__)
+
+#include <CoreFoundation/CoreFoundation.h>
+
+#endif
+
+#include "BlueExposure/include/BlueExposure.h"
+#include <blue/Include/Blue.h>
+#include <blue/Include/IBluePython.h>
+#include <blue/Include/IBlueOS.h>
+#include "blue/Include/BlueStatistics.h"

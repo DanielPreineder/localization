@@ -26,18 +26,10 @@ Collator::Collator( const std::string& languageCode, IRoot* lockObj /* = 0 */ )
 // -------------------------------------------------------------
 int Collator::Compare( const std::wstring& source, const std::wstring& target ) const
 {
-	int ret = CompareStringW( m_localeID, 0, source.c_str(), -1, target.c_str(), -1 );
-
-	switch ( ret )
-	{
-		case CSTR_LESS_THAN:
-			return -1;
-		case CSTR_GREATER_THAN:
-			return 1;
-		case CSTR_EQUAL:
-		default:
-			return 0;
-	};
+    auto& col = std::use_facet<std::collate<wchar_t>>( m_locale );
+    return col.compare(
+       source.c_str(), source.c_str() + source.length(),
+       target.c_str(), target.c_str() + target.length() );
 }
 
 // -------------------------------------------------------------
@@ -47,6 +39,14 @@ int Collator::Compare( const std::wstring& source, const std::wstring& target ) 
 //   languageCode - string representation of the locale as used in Python
 // -------------------------------------------------------------
 void Collator::SetLocale( const std::string& languageCode )
-{ 
-	m_localeID = CodeToLanguageID( languageCode.c_str() );
+{
+    m_localeID = CodeToLanguageID( languageCode.c_str() );
+    try
+    {
+        m_locale = std::locale( LanguageIDToLocaleName( m_localeID ) );
+    }
+    catch ( std::runtime_error )
+    {
+        m_locale = std::locale();
+    }
 }

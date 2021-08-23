@@ -30,7 +30,7 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
 	{
 		return NULL;
 	}
-
+#ifdef _WIN32
 	BYTE isWhitespace = 0, prevWhitespace = 0; // Treat the character after any whitespace as a linebreak point.
 	// There's no need to break at the very first character, we're in trouble by then anyway
 	for ( size_t i = 0; i < wrapPointList->Size(); ++i )
@@ -44,7 +44,25 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
 		}
 		prevWhitespace = isWhitespace;
 	}
-
+#elif defined( __APPLE__ )
+    AutoReleaseCF<CFStringTokenizerRef> tokenizer = CFStringTokenizerCreate(
+        kCFAllocatorDefault,
+        wrapPointList->GetCoreString(),
+        CFRangeMake( 0, CFStringGetLength( wrapPointList->GetCoreString() ) ),
+        kCFStringTokenizerUnitLineBreak,
+        wrapPointList->GetCoreLocale());
+    CFStringTokenizerTokenType tokenType = kCFStringTokenizerTokenNone;
+    while( kCFStringTokenizerTokenNone != ( tokenType = CFStringTokenizerAdvanceToNextToken( tokenizer ) ) )
+    {
+        CFRange tokenRange = CFStringTokenizerGetCurrentTokenRange( tokenizer );
+        if( tokenRange.location > 0 )
+        {
+            PyObject* val = PyInt_FromLong( (long) tokenRange.location );
+            PyList_Append( retVal, val );
+            Py_DECREF( val );
+        }
+    }
+#endif
 	return retVal;
 }
 
@@ -63,6 +81,7 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
 // -------------------------------------------------------------
 PyObject* PyGetWordbreakPoints( PyObject* self, PyObject* args )
 {
+#ifdef _WIN32
 	CCP_STATS_ZONE( __FUNCTION__ );
 
 	WrapPointList* wrapPointList = BluePythonCast<WrapPointList*>( self );
@@ -72,7 +91,6 @@ PyObject* PyGetWordbreakPoints( PyObject* self, PyObject* args )
 	{
 		return NULL;
 	}
-
 	BYTE isWhitespace = 0, prevWhitespace = 0; // Treat the character after any whitespace as a linebreak point.
 	// There's no need to break at the very first character, we're in trouble by then anyway
 	for ( size_t i = 0; i < wrapPointList->Size(); ++i )
@@ -86,17 +104,20 @@ PyObject* PyGetWordbreakPoints( PyObject* self, PyObject* args )
 		}
 		prevWhitespace = isWhitespace;
 	}
-
-	return retVal;
+    return retVal;
+#else
+    PyErr_SetString( PyExc_NotImplementedError, "This function is not implemented for this platform" );
+    return nullptr;
+#endif
 }
 
-static PyObject* Py__init__(PyObject *self, PyObject *args)
+PyObject* Py__init__(PyObject *self, PyObject *args)
 {
 	WrapPointList* pThis = BluePythonCast<WrapPointList*>( self );
-
 	Py_UNICODE *textStr = 0;
+    int textLength = 0;
 	const char* langStr = 0;
-	if (!PyArg_ParseTuple(args, "u#s", &textStr, &pThis->m_wrapPointListCount, &langStr))
+	if (!PyArg_ParseTuple(args, "u#s", &textStr, &textLength, &langStr))
 	{
 		PyErr_SetString( PyExc_ValueError, 
 			"Error in constructor arguments:\n"
@@ -105,6 +126,8 @@ static PyObject* Py__init__(PyObject *self, PyObject *args)
 		PyOS->PyFlushError( "WrapPointList::Py__init__" );
 		return NULL;
 	}
+#ifdef _WIN32
+    pThis->m_wrapPointListCount = textLength;
 
 	if ( pThis->m_wrapPointListCount > (size_t) INT_MAX )
 	{
@@ -132,7 +155,11 @@ static PyObject* Py__init__(PyObject *self, PyObject *args)
 		ItemRun *itemRun = &pThis->m_itemRunList[i];
 		ScriptBreak( textStr + itemRun->charPos, itemRun->len, &itemRun->analysis, pThis->m_wrapPointList + itemRun->charPos );
 	}
-
+#elif defined( __APPLE__ )
+    pThis->m_coreString = ToStringRef( reinterpret_cast<const wchar_t*>( textStr ), size_t( textLength ) );
+    AutoReleaseCF<CFStringRef> name = ToStringRef( LanguageIDToCode( CodeToLanguageID( langStr ) ) );
+    pThis->m_coreLocale = CFLocaleCreate( nullptr, name );
+#endif
 	Py_RETURN_NONE;
 };
 

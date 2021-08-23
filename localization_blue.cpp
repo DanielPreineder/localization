@@ -134,7 +134,7 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 					{
 						std::string  k( PyString_AS_STRING( tmp ) );
 						Py_DECREF(tmp);
-						std::wstring v( PyUnicode_AS_UNICODE( val ), PyUnicode_GET_SIZE( val ) );
+                        std::wstring v( PyUnicodeToWString( val ) );
 						md->metaData->insert( MetaData::value_type( k, v ) );
 					}
 				}
@@ -156,7 +156,7 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 				}
 			}
 
-			md->text = std::wstring( PyUnicode_AS_UNICODE( text ), PyUnicode_GET_SIZE( text ) );
+			md->text = PyUnicodeToWString( text );
 
 			mm[id] = md;
 		}
@@ -791,13 +791,13 @@ PyObject* PyFormatNumeric( PyObject* module, PyObject* args, PyObject* kwargs )
 		tmp = PyDict_GetItemString( kwargs, "decimalPlaces" );
 		if ( tmp && tmp != Py_None && PyInt_Check( tmp ) )
 		{
-			decimalPlaces = max( 0, min( 9, (int) PyInt_AS_LONG( tmp ) ) );
+			decimalPlaces = std::max( 0, std::min( 9, (int) PyInt_AS_LONG( tmp ) ) );
 		}
 
 		tmp = PyDict_GetItemString( kwargs, "leadingZeroes" );
 		if ( tmp && tmp != Py_None && PyInt_Check( tmp ) )
 		{
-			leadingZeroes = max( 0, min( 9, (int) PyInt_AS_LONG( tmp ) ) );
+			leadingZeroes = std::max( 0, std::min( 9, (int) PyInt_AS_LONG( tmp ) ) );
 		}
 	}
 

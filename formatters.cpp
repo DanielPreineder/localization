@@ -8,6 +8,8 @@
 #include "localization.h"
 #include "parser.h"
 
+static_assert( sizeof( wchar_t) == sizeof( PY_UNICODE_TYPE ), "EveLocalization expects PY_UNICODE_TYPE to match wchar_t" );
+
 const unsigned int GROUPING_VALUE = 3;
 
 // -------------------------------------------------------------
@@ -31,7 +33,7 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, PyObject* v
 		return false;
 	}
 
-	std::wstring val( PyUnicode_AS_UNICODE( unicodeValue ), PyUnicode_GET_SIZE( unicodeValue ) );
+	std::wstring val( PyUnicodeToWString( unicodeValue ) );
 	Py_DECREF( unicodeValue );
 	return SimpleValueFormatter( token, lang, val, kwargs, retVal );
 }
@@ -135,7 +137,7 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 				Py_DECREF( linkData );
 				return false;
 			}
-			retVal << L"<a href=" << PyUnicode_AS_UNICODE( tmp ) << L":";
+			retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( tmp ) ) << L":";
 
 			Py_XDECREF( tmp );
 
@@ -152,7 +154,7 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 					Py_DECREF( linkData );
 					return false;
 				}
-				retVal << PyUnicode_AS_UNICODE( tmp );
+				retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( tmp ) );
 				Py_XDECREF( tmp );
 			}
 
@@ -206,7 +208,7 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 		return false;
 	}
 
-	format = PyUnicode_AsUnicode( cit->second );
+	format = reinterpret_cast<wchar_t*>( PyUnicode_AsUnicode( cit->second ) );
 	if ( ! format )
 	{
 		return false;
@@ -231,21 +233,38 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	else if ( PyLong_Check( value ) )
 	{
 		Be::Time timeVal = PyLong_AsLongLong( value );
-		SYSTEMTIME st;
-		FileTimeToSystemTime( ( FILETIME* )&timeVal, &st );
-		timeInfo.tm_year  = st.wYear;
-		timeInfo.tm_mon   = st.wMonth;
-		timeInfo.tm_mday  = st.wDay;
-		timeInfo.tm_hour  = st.wHour;
-		timeInfo.tm_min   = st.wMinute;
-		timeInfo.tm_sec   = st.wSecond;
-		timeInfo.tm_wday  = st.wDayOfWeek;
-		timeInfo.tm_yday  = 1;
+
+		CcpDateTime dt;
+		TimeAsDateTime( dt, timeVal );
+
+		timeInfo.tm_year = dt.year - 1900;
+		timeInfo.tm_mon = dt.month - 1;
+		timeInfo.tm_mday = dt.day;
+		timeInfo.tm_hour = dt.hour;
+		timeInfo.tm_min = dt.minute;
+		timeInfo.tm_sec = dt.second;
+		timeInfo.tm_wday = dt.dayOfWeek;
+		timeInfo.tm_yday = 1;
 		timeInfo.tm_isdst = -1;
-		// Normalize to years since 1900, months since january
-		timeInfo.tm_year -= 1900;
-		timeInfo.tm_mon  -= 1;
 	}
+	//Python maxint on macOS is 64bit which produces numbers of type int64 when parsed through YAML rather than long produced on Windows.
+    else if ( ( PyInt_Check( value ) ) && ( sizeof ( long int ) == 8 ) )
+    {
+        Be::Time timeVal = PyInt_AsLong( value );
+
+        CcpDateTime dt;
+        TimeAsDateTime( dt, timeVal );
+
+        timeInfo.tm_year = dt.year - 1900;
+        timeInfo.tm_mon = dt.month - 1;
+        timeInfo.tm_mday = dt.day;
+        timeInfo.tm_hour = dt.hour;
+        timeInfo.tm_min = dt.minute;
+        timeInfo.tm_sec = dt.second;
+        timeInfo.tm_wday = dt.dayOfWeek;
+        timeInfo.tm_yday = 1;
+        timeInfo.tm_isdst = -1;
+    }
 	else if ( PyFloat_Check( value ) )
 	{
 		time_t x = ( time_t ) PyFloat_AS_DOUBLE( value );
@@ -260,7 +279,11 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	// see if we need to apply a delta, for instance China wants to display GMT+8 despite us running GMT.
 	if ( g_settings.timeDelta != 0 )
 	{
+#ifdef _WIN32
 		time_t x = _mkgmtime( &timeInfo );
+#else
+        time_t x = timegm( &timeInfo );
+#endif
 		x += g_settings.timeDelta;
 		gmtime_s( &timeInfo, (const time_t*) &x );
 	}
@@ -376,7 +399,7 @@ double round(double val, unsigned int decimals)
 	double sign = val != 0.0 ? fabs( val ) / val : 1.0;
 	//shift decimal places
 	double tempval = fabs( val * pow( (double) 10, (double) decimals ) );
-	unsigned __int64 tempint = (unsigned __int64) tempval;
+	uint64_t tempint = (uint64_t) tempval;
 	double decimalpart = tempval-tempint;
 
 	// actual rounding
@@ -420,15 +443,28 @@ size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE],
 	// wsprintf does not support floating point numbers correctly, alas we need to use _snwprintf
 	if ( PyInt_Check( value ) )
 	{
+#ifdef _WIN32
 		len = _snwprintf_s( number, STACK_BUFFER_SIZE_LARGE, L"%I32d", PyInt_AS_LONG( value ) );
+#else
+        len = swprintf( number, STACK_BUFFER_SIZE_LARGE, L"%ld", PyInt_AS_LONG( value ) );
+#endif
 	}
 	else if ( PyLong_Check( value ) )
 	{
+#ifdef _WIN32
 		len = _snwprintf_s( number, STACK_BUFFER_SIZE_LARGE, L"%I64d", PyLong_AsLongLong( value ) );
+#else
+		static_assert( sizeof( PY_LONG_LONG ) == sizeof( long long int ) );
+        len = swprintf( number, STACK_BUFFER_SIZE_LARGE, L"%lld", PyLong_AsLongLong( value ) );
+#endif
 	}
 	else if ( PyFloat_Check( value ) )
 	{
+#ifdef _WIN32
 		len = _snwprintf_s( number, STACK_BUFFER_SIZE_LARGE, L"%.*f", numDigits, round( PyFloat_AS_DOUBLE( value ), numDigits ) );
+#else
+        len = swprintf( number, STACK_BUFFER_SIZE_LARGE, L"%.*f", numDigits, round( PyFloat_AS_DOUBLE( value ), numDigits ) );
+#endif
 	}
 	else
 	{
@@ -459,7 +495,7 @@ size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE],
 	}
 
 	// inject leading zeroes, if required
-	int requiredLeadingZeroes = max( 0, leadingZeroes - (int) posDecimalSep );
+	int requiredLeadingZeroes = std::max( 0, leadingZeroes - (int) posDecimalSep );
 	size_t remainder = requiredLeadingZeroes == 0 ? posDecimalSep % GROUPING_VALUE : leadingZeroes % GROUPING_VALUE;
 	size_t groupPos = remainder > 0 ? remainder : GROUPING_VALUE;
 
@@ -493,7 +529,7 @@ size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE],
 
 	*pOut = L'\0';
 
-	return min( len , STACK_BUFFER_SIZE_SMALL );
+	return std::min( len , size_t( STACK_BUFFER_SIZE_SMALL ) );
 }
 
 // -------------------------------------------------------------
@@ -519,7 +555,7 @@ bool NumericFormatter( const Token& token, const Language& lang, PyObject* value
 	// then this can happen. Alas, safe to ignore for the moment, but this might be detectable in the tokenizer.
 	if ( PyUnicode_Check( value ) )
 	{
-		std::wstring tmp( PyUnicode_AS_UNICODE( value ), PyUnicode_GET_SIZE( value ) );
+		std::wstring tmp( PyUnicodeToWString( value ) );
 		retVal << tmp;
 		return true;
 	}
@@ -528,7 +564,7 @@ bool NumericFormatter( const Token& token, const Language& lang, PyObject* value
 		PyObject* o = PyObject_Unicode( value );
 		if ( o )
 		{
-			std::wstring tmp( PyUnicode_AS_UNICODE( o ), PyUnicode_GET_SIZE( o ) );
+			std::wstring tmp( PyUnicodeToWString( o ) );
 			retVal << tmp;
 		}
 		else
@@ -541,12 +577,12 @@ bool NumericFormatter( const Token& token, const Language& lang, PyObject* value
 
 	if ( TOKENFLAG_DECIMALPLACES == ( token.flags & TOKENFLAG_DECIMALPLACES ) )
 	{
-		decimalPlaces = max( 0, min( 9, PyInt_AS_LONG( token.kwargs->find("decimalPlaces")->second ) ) );
+		decimalPlaces = std::max( 0, std::min( 9, int( PyInt_AS_LONG( token.kwargs->find("decimalPlaces")->second ) ) ) );
 	}
 
 	if ( TOKENFLAG_LEADINGZEROES == ( token.flags & TOKENFLAG_LEADINGZEROES ) )
 	{
-		leadingZeroes = max( 0, min( 9, PyInt_AS_LONG( token.kwargs->find("leadingZeroes")->second ) ) );
+		leadingZeroes = std::max( 0, std::min( 9, int( PyInt_AS_LONG( token.kwargs->find("leadingZeroes")->second ) ) ) );
 	}
 
 	result = FormatNumber( out, value, decimalPlaces, leadingZeroes, ( TOKENFLAG_USEGROUPING == ( token.flags & TOKENFLAG_USEGROUPING ) ) );

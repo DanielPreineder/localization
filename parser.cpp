@@ -250,7 +250,7 @@ bool ProcessConditional( const Token& token, const Language& lang, PyObject* val
 			++numValues;
 		}
 		// Not a quantity, so we assume that we can simply use value.
-		index = (size_t) max( (int)0, min( numValues, val ) );
+		index = (size_t) std::max( (int)0, std::min( numValues, val ) );
 	}
 
 	retVal << (token.conditionalValues[index]);
@@ -267,7 +267,7 @@ bool ProcessConditional( const Token& token, const Language& lang, PyObject* val
 // See Also:
 //   ProcessConditional
 // -------------------------------------------------------------
-size_t GetType1QuantityCategory( __int64 quantity )
+size_t GetType1QuantityCategory( int64_t quantity )
 {
 	return 0;
 }
@@ -282,7 +282,7 @@ size_t GetType1QuantityCategory( __int64 quantity )
 // See Also:
 //   ProcessConditional
 // -------------------------------------------------------------
-size_t GetType2QuantityCategory( __int64 quantity )
+size_t GetType2QuantityCategory( int64_t quantity )
 {
 	if ( 1 == quantity || -1 == quantity )
 	{
@@ -304,7 +304,7 @@ size_t GetType2QuantityCategory( __int64 quantity )
 // See Also:
 //   ProcessConditional
 // -------------------------------------------------------------
-size_t GetType3QuantityCategory( __int64 quantity )
+size_t GetType3QuantityCategory( int64_t quantity )
 {
 	quantity = abs( quantity );
 

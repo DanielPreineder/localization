@@ -3,7 +3,7 @@
 #define Formatters_H
 
 #include <iostream>
-#include <Blue/Include/Blue.h>
+#include <blue/Include/Blue.h>
 
 struct Token;
 struct Language;

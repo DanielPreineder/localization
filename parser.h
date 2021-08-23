@@ -2,7 +2,7 @@
 #ifndef Parser_H
 #define Parser_H
 
-#include <Blue/include/Blue.h>
+#include <blue/Include/Blue.h>
 #include "localization.h"
 
 extern bool Parse( const std::wstring& sourceText, const Language& lang, const TokenContainer& tokens, PyObject* kwargs, std::wstringstream& retVal );

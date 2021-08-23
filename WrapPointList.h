@@ -2,8 +2,9 @@
 #ifndef WrapPointList_H
 #define WrapPointList_H
 
-#include <usp10.h>
+#include "localization.h"
 
+#ifdef _WIN32
 // -------------------------------------------------------------
 // Description:
 //   Provides extended information from the script analysis.
@@ -14,6 +15,7 @@ struct ItemRun
 	int					charPos;
 	int					len;      // length of run in WCHARs
 };
+#endif
 
 // -------------------------------------------------------------
 // Description:
@@ -24,6 +26,7 @@ BLUE_CLASS( WrapPointList) : public IRoot
 public:
 	EXPOSE_TO_BLUE();
 
+#ifdef _WIN32
 	WrapPointList( IRoot* lockobj = 0 );
 	~WrapPointList();
 
@@ -31,15 +34,25 @@ public:
 	{
 		return m_wrapPointList[index];
 	}
-
 	size_t Size() const
 	{
 		return m_wrapPointListCount;
 	}
+#elif defined(__APPLE__)
+    CFStringRef GetCoreString() const
+    {
+        return m_coreString;
+    }
+    CFLocaleRef GetCoreLocale() const
+    {
+        return m_coreLocale;
+    }
+#endif
 
 	friend PyObject* Py__init__(PyObject *self, PyObject *args);
 
 private:
+#ifdef _WIN32
 	void MergeSimpleScripts();
 	void BuildItemRunList();
 
@@ -56,6 +69,10 @@ private:
 	SCRIPT_ITEM* m_tempItemList;
 	int m_tempItemCount;
 	int m_tempItemAllocLen;
+#elif defined(__APPLE__)
+    AutoReleaseCF<CFStringRef> m_coreString;
+    AutoReleaseCF<CFLocaleRef> m_coreLocale;
+#endif
 };
 TYPEDEF_BLUECLASS( WrapPointList );
 

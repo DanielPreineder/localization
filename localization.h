@@ -5,7 +5,6 @@
 #include <locale>
 #include <map>
 #include <vector>
-#include <Blue/Include/Blue.h>
 
 // language codes
 // This is really a list of all the Windows LCID's we support, see http://msdn.microsoft.com/en-us/goglobal/bb964664
@@ -20,7 +19,7 @@ enum LanguageID
 	LANGUAGEID_ITALIAN             = 1040,
 	LANGUAGEID_SPANISH             = 1034,
 	LANGUAGEID_CHINESE_SIMPLIFIED  = 2052, // Apparently simplified is the same as People's Republic of China in Windows
-	LANGUAGEID_SYSTEM_DEFAULT      = LOCALE_USER_DEFAULT,
+	LANGUAGEID_SYSTEM_DEFAULT      = 0x0400, // LOCALE_USER_DEFAULT,
 	LANGUAGEID_DEFAULT             = LANGUAGEID_ENGLISH_US,
 };
 
@@ -205,7 +204,7 @@ struct MessageData
 	MetaDataPtr        metaData;
 };
 
-typedef unsigned __int64 MessageID;
+typedef uint64_t MessageID;
 class MessageMap : public std::map<MessageID, MessageData*>
 {
 public:
@@ -228,7 +227,7 @@ typedef PropertyHandlerMap::iterator PropertyHandlerMapIt;
 typedef PropertyHandlerMap::const_iterator PropertyHandlerMapCit;
 
 // pointer to the quantity category function we should use to determine the conditional value index
-typedef size_t (*QuantityCategoryFuncPtr)( __int64 );
+typedef size_t (*QuantityCategoryFuncPtr)( int64_t );
 
 // small helper to get array size
 #define	DIM(a)	( sizeof( a ) / sizeof( a[0] ) )
@@ -261,6 +260,8 @@ struct Language
 		}
 		return *this;
 	}
+
+	bool SetNumberSeparators(LanguageID langID);
 
 	LanguageID               id; // same as the primary language identifier
 	QuantityCategoryFuncPtr  quantityCategoryFunc;
@@ -300,13 +301,67 @@ extern PyObject* PyGetMessageByID( PyObject* module, PyObject* args, PyObject* k
 extern PyObject* PyFormatNumeric( PyObject* module, PyObject* args, PyObject* kwargs );
 
 // quantities
-extern size_t GetType1QuantityCategory( __int64 quantity );
-extern size_t GetType2QuantityCategory( __int64 quantity );
-extern size_t GetType3QuantityCategory( __int64 quantity );
+extern size_t GetType1QuantityCategory( int64_t quantity );
+extern size_t GetType2QuantityCategory( int64_t quantity );
+extern size_t GetType3QuantityCategory( int64_t quantity );
 
 // Stuff
 extern bool LoadToken( PyObject* dict, Token& token );
 extern bool LoadTokens( PyObject* dict, MessageData& messageData );
 extern size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE], PyObject* value, int numDigits = 2, int leadingZeroes = 0, bool useGrouping = false );
+
+
+std::wstring PyUnicodeToWString( PyObject* unicode );
+
+#ifdef __APPLE__
+CFStringRef ToStringRef( const char* string );
+CFStringRef ToStringRef( const std::string& string );
+CFStringRef ToStringRef( const wchar_t* string, size_t length );
+CFStringRef ToStringRef( const std::wstring& string );
+
+template <typename T>
+class AutoReleaseCF
+{
+public:
+    AutoReleaseCF()
+    :   m_ref( nullptr )
+    {
+    }
+
+    AutoReleaseCF( T ref )
+    :   m_ref( ref )
+    {
+    }
+    
+    ~AutoReleaseCF()
+    {
+        if( m_ref )
+        {
+            CFRelease( m_ref );
+        }
+    }
+    
+    AutoReleaseCF& operator=( T ref )
+    {
+        if( m_ref == ref )
+        {
+            return *this;
+        }
+        if( m_ref )
+        {
+            CFRelease( m_ref );
+        }
+        m_ref = ref;
+        return* this;
+    }
+    
+    operator T() const
+    {
+        return m_ref;
+    }
+private:
+    T m_ref;
+};
+#endif
 
 #endif // Localization_H

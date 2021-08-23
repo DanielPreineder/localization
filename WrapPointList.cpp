@@ -1,15 +1,17 @@
 #include "stdafx.h"
 #include "WrapPointList.h"
 
+#ifdef _WIN32
 
 // DOM-IGNORE-BEGIN
-WrapPointList::WrapPointList( IRoot* lockobj /* = 0 */ ) : m_itemRunCount( 0 ), 
-								                           m_itemRunList( nullptr ), 
-								                           m_tempItemList( nullptr ), 
-								                           m_tempItemAllocLen( 0 ),
-								                           m_tempItemCount( 0 ),
-								                           m_wrapPointList( nullptr ),
-														   m_wrapPointListCount( 0 )
+WrapPointList::WrapPointList( IRoot* lockobj /* = 0 */ )
+:   m_itemRunCount( 0 ),
+    m_itemRunList( nullptr ),
+    m_tempItemList( nullptr ),
+    m_tempItemAllocLen( 0 ),
+    m_tempItemCount( 0 ),
+    m_wrapPointList( nullptr ),
+    m_wrapPointListCount( 0 )
 {
 }
 
@@ -122,7 +124,7 @@ bool WrapPointList::TextAnalyze ( WCHAR* wstr, int wlen, SCRIPT_CONTROL* scriptC
 		return true;
 	}
 
-	int allocLen = max(m_tempItemAllocLen, 16);
+	int allocLen = std::max(m_tempItemAllocLen, 16);
 
 	HRESULT hr;
 
@@ -164,3 +166,5 @@ bool WrapPointList::TextAnalyze ( WCHAR* wstr, int wlen, SCRIPT_CONTROL* scriptC
 
 	return true;
 }
+
+#endif

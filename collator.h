@@ -34,8 +34,9 @@ public:
 	void SetLocale( const std::string& languageCode );
 
 private:
-	// The locale that is supposed to be used for this collator
-	LanguageID m_localeID;
+    // The locale that is supposed to be used for this collator
+    LanguageID m_localeID;
+    std::locale m_locale;
 };
 TYPEDEF_BLUECLASS( Collator );
 

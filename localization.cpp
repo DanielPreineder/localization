@@ -5,13 +5,7 @@
 
 #include "localization.h"
 
-#include <Blue/Include/Blue.cxx>
-
 #include "parser.h"
-
-#ifndef BLUE_DLL_NAME
-#error Please add BLUE_DLL_NAME=<PythonModuleName> to compiler preprocessor definitions (/D)
-#endif
 
 const char* g_moduleName = "_evelocalization";
 LocalizationSettings g_settings;
@@ -38,24 +32,118 @@ Language::Language( LanguageID langID /*= Default_Language*/ ) : id( langID ),  
 		break;
 	};
 
-	locale = std::locale( LanguageIDToLocaleName( langID ) );
+    try
+    {
+        locale = std::locale( LanguageIDToLocaleName( langID ) );
+    }
+    catch ( std::runtime_error )
+    {
+        CCP_LOGWARN( "Localization failed to initialize locale for %s. Falling back to system locale", LanguageIDToLocaleName( langID ) );
+    }
 
-	decimalSep = L'.';
-	thousandSep = L',';
+	if( !SetNumberSeparators( langID ) )
+	{
+		//Default fallback ( English )
+        decimalSep = L'.';
+        thousandSep = L',';
+	}
+
+}
+
+// -------------------------------------------------------------
+// Description:
+//   Sets decimalSep and thousandSep to match system region, only returns
+// Arguments:
+//   langID - the LanguageID.
+// Return value:
+//   True if decimal and thousands separator is found for langID, false otherwise.
+// -------------------------------------------------------------
+bool Language::SetNumberSeparators(LanguageID langID)
+{
+#if _WIN32
 
 	// MSDN says: maximum 4 characters for LOCALE_SDECIMAL and LOCALE_STHOUSAND, including terminating NULL
-	wchar_t temp[4];
+	const int len = 4;
+	wchar_t temp[len];
 	// Note that we are only supporting a single character as grouping and decimal symbol,
 	// and thus we check that we get more than just the terminating NULL returned.
-	if ( GetLocaleInfoW( langID, LOCALE_SDECIMAL, temp, 4 ) > 1 )
+	if ( GetLocaleInfoW( langID, LOCALE_SDECIMAL, temp, len ) <= 1 )
+	{
+		CCP_LOGWARN( "Localization failed to get decimal char. Falling back to default setting." );
+		return false;
+	}
+	decimalSep = temp[0];
+	if ( GetLocaleInfoW( langID, LOCALE_STHOUSAND, temp, len ) <= 1)
+	{
+		CCP_LOGWARN( "Localization failed to get thousands char. Falling back to default setting." );
+		return false;
+	}
+	thousandSep = temp[0];
+
+	return true;
+
+#elif __APPLE__
+
+    CFLocaleRef locale = NULL;
+
+	if( langID == LANGUAGEID_SYSTEM_DEFAULT )
+	{
+		//Get system default locale
+        locale = CFLocaleCopyCurrent();
+	}
+	else
+	{
+		const char* localName = LanguageIDToLocaleName( langID );
+        CFStringRef localId = CFStringCreateWithCString( kCFAllocatorDefault, localName,kCFStringEncodingUTF8 );
+		if( !localId )
+		{
+            CCP_LOGWARN( "Localization failed to initialize localeID for %s. Falling back to default setting.", localName );
+			return false;
+		}
+
+        locale = CFLocaleCreate( kCFAllocatorDefault, localId );
+        CFRelease( localId );
+		if( !locale )
+		{
+            CCP_LOGWARN( "Localization failed to create CFLocale %s. Falling back to default setting.", localName );
+			return false;
+		}
+	}
+
+    CFStringRef decimalSeparatorRef = ( CFStringRef )CFLocaleGetValue( locale, kCFLocaleDecimalSeparator );
+    CFStringRef groupingSeparatorRef = ( CFStringRef )CFLocaleGetValue( locale, kCFLocaleGroupingSeparator );
+
+    CFIndex len = 2;
+    char temp[len];
+	bool retVal = true;
+    if( !CFStringGetCString( decimalSeparatorRef, temp, len, kCFStringEncodingUTF8 ) )
+	{
+        CCP_LOGWARN( "Localization failed to get decimal char. Falling back to default setting." );
+        retVal = false;
+	}
+	else
 	{
 		decimalSep = temp[0];
 	}
-	if ( GetLocaleInfoW( langID, LOCALE_STHOUSAND, temp, 4 ) > 1 )
+
+    if( !CFStringGetCString( groupingSeparatorRef, temp, len, kCFStringEncodingUTF8 ) )
 	{
-		thousandSep = temp[0];
+        CCP_LOGWARN( "Localization failed to get thousands char. Falling back to default setting." );
+        retVal = false;
 	}
+	else
+	{
+        thousandSep = temp[0];
+	}
+
+    CFRelease( locale );
+
+	return retVal;
+
+#endif
+
 }
+
 
 // -------------------------------------------------------------
 // Description:
@@ -182,7 +270,7 @@ bool LoadToken( PyObject* dict, Token& token )
 					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - conditionalValues must be unicode strings" );
 					return false;
 				}
-				std::wstring result( PyUnicode_AS_UNICODE( item ), PyUnicode_GET_SIZE( item ) );
+                std::wstring result( PyUnicodeToWString( item ) );
 				token.conditionalValues[i] = result;
 			}
 		}
@@ -271,7 +359,7 @@ bool LoadTokens( PyObject* dict, MessageData& messageData )
 			return false;
 		}
 
-		token->tagName = std::wstring( PyUnicode_AS_UNICODE( key ), PyUnicode_GET_SIZE( key ) );
+        token->tagName = PyUnicodeToWString( key );
 
 		// temporarily keep support for linkify
 		// TODO: Does this really have to happen on load time? <snorri>
@@ -295,6 +383,22 @@ bool LoadTokens( PyObject* dict, MessageData& messageData )
 
 	return true;
 }
+
+#ifndef _WIN32
+int _stricmp( const char* a, const char* b )
+{
+    int ca, cb;
+    do
+    {
+        ca = *a++;
+        cb = *b++;
+        ca = tolower( ca );
+        cb = tolower( cb );
+    }
+    while( ca == cb && ca != 0 );
+    return ca - cb;
+}
+#endif
 
 // -------------------------------------------------------------
 // Description:
@@ -371,6 +475,7 @@ const char* LanguageIDToCode( LanguageID languageID )
 // -------------------------------------------------------------
 const char* LanguageIDToLocaleName( LanguageID languageID )
 {
+#ifdef _WIN32
 	switch( languageID )
 	{
 		case LANGUAGEID_CHINESE_SIMPLIFIED:
@@ -393,18 +498,93 @@ const char* LanguageIDToLocaleName( LanguageID languageID )
 		default:
 			return "english";
 	};
+#else
+switch( languageID )
+{
+    case LANGUAGEID_CHINESE_SIMPLIFIED:
+        return "zh_CN";
+    case LANGUAGEID_GERMAN:
+        return "de_DE";
+    case LANGUAGEID_RUSSIAN:
+        return "ru_RU";
+    case LANGUAGEID_FRENCH:
+        return "fr_FR";
+    case LANGUAGEID_ITALIAN:
+        return "it_IT";
+    case LANGUAGEID_SPANISH:
+        return "es_ES";
+    case LANGUAGEID_JAPANESE:
+        return "ja_JP";
+    case LANGUAGEID_KOREAN:
+        return "ko_KR";
+    case LANGUAGEID_ENGLISH_US:
+    default:
+        return "en_US";
 };
+#endif
+};
+
+
+std::wstring PyUnicodeToWString( PyObject* unicode )
+{
+    return std::wstring( reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( unicode ) ), PyUnicode_GET_SIZE( unicode ) );
+}
+
+#ifdef __APPLE__
+CFStringRef ToStringRef( const char* string )
+{
+    return CFStringCreateWithBytes(
+        kCFAllocatorDefault,
+        reinterpret_cast<const uint8_t*>( string ),
+        strlen( string ) * sizeof( char ),
+        kCFStringEncodingASCII,
+        false );
+}
+
+CFStringRef ToStringRef( const std::string& string )
+{
+    return CFStringCreateWithBytes(
+        kCFAllocatorDefault,
+        reinterpret_cast<const uint8_t*>( string.c_str() ),
+        string.length() * sizeof( char ),
+        kCFStringEncodingASCII,
+        false );
+}
+
+CFStringRef ToStringRef( const wchar_t* string, size_t length )
+{
+    CFStringEncoding encoding = ( CFByteOrderLittleEndian == CFByteOrderGetCurrent() ) ? kCFStringEncodingUTF32LE : kCFStringEncodingUTF32BE;
+    
+    return CFStringCreateWithBytes(
+        kCFAllocatorDefault,
+        reinterpret_cast<const uint8_t*>( string ),
+        length * sizeof( wchar_t ),
+        encoding,
+        false );
+}
+
+CFStringRef ToStringRef( const std::wstring& string )
+{
+    CFStringEncoding encoding = ( CFByteOrderLittleEndian == CFByteOrderGetCurrent() ) ? kCFStringEncodingUTF32LE : kCFStringEncodingUTF32BE;
+    
+    return CFStringCreateWithBytes(
+        kCFAllocatorDefault,
+        reinterpret_cast<const uint8_t*>( string.c_str() ),
+        string.size() * sizeof( wchar_t ),
+        encoding,
+        false );
+}
+#endif
+
 
 //-----------------------------------------------------------------------------
 // The globals
 //-----------------------------------------------------------------------------
-HINSTANCE gInstance = NULL;
-
-static void StartDLL(HINSTANCE instance)
-{	
+static void StartDLL()
+{
 	BeClasses->RegisterClasses( BlueRegistration::GetClassRegs() );
 	
-	PyObject* module = Py_InitModule( CCP_STRINGIZE( BLUE_DLL_NAME ), NULL);
+	PyObject* module = Py_InitModule( CCP_STRINGIZE( CCP_CONCATENATE( _evelocalization, CCP_BUILD_FLAVOR ) ), NULL );
 	
 	PyMethodDef pmd[] = { 
 							{ 
@@ -439,12 +619,11 @@ static void StartDLL(HINSTANCE instance)
 	//Init 3rd party libs here.
 }
 
-
+#ifdef _WIN32
 BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 {
 	if (reason == DLL_PROCESS_ATTACH)
 	{
-		gInstance = instance;
 		DisableThreadLibraryCalls(instance);
 	}
 	else if (reason == DLL_PROCESS_DETACH)
@@ -453,13 +632,18 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 	}
     return TRUE;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 // init - python dll module entry function
 //-----------------------------------------------------------------------------
-#define CONCAT( a, b ) MY_CONCAT( a, b )
-#define MY_CONCAT( a, b ) a##b
-extern "C" void __declspec(dllexport) CONCAT( init, BLUE_DLL_NAME )()
+extern "C" void
+#ifdef _WIN32
+__declspec(dllexport)
+#else
+__attribute__((visibility ("default")))
+#endif
+CCP_CONCATENATE( init_evelocalization, CCP_BUILD_FLAVOR )()
 {
-	StartDLL(gInstance);
+	StartDLL();
 }
