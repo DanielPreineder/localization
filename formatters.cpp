@@ -289,7 +289,19 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	}
 
 	setlocale( LC_TIME, LanguageIDToLocaleName( lang.id ) );
-	wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, format, &timeInfo );
+#if !_WIN32
+	// Format may contain Windows-specific %# formats (%#c and %#x). We have to replace them with %x and %c.
+	if( auto found = wcsstr( format, L"%#" ) )
+	{
+		std::wstring fmt = format;
+		fmt.erase( found - format + 1, 1 );
+		wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, fmt.c_str(), &timeInfo );
+	}
+	else
+#endif
+	{
+		wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, format, &timeInfo );
+	}
 	std::wstring buf(buffer);
 
 	return SimpleValueFormatter( token, lang, buf, kwargs, retVal );
