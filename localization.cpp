@@ -113,27 +113,37 @@ bool Language::SetNumberSeparators(LanguageID langID)
     CFStringRef decimalSeparatorRef = ( CFStringRef )CFLocaleGetValue( locale, kCFLocaleDecimalSeparator );
     CFStringRef groupingSeparatorRef = ( CFStringRef )CFLocaleGetValue( locale, kCFLocaleGroupingSeparator );
 
-    CFIndex len = 2;
-    char temp[len];
+    char temp[sizeof( wchar_t ) * 2];
 	bool retVal = true;
-    if( !CFStringGetCString( decimalSeparatorRef, temp, len, kCFStringEncodingUTF8 ) )
+    
+    CFStringEncoding encoding;
+    if( sizeof( wchar_t ) == 2 )
+    {
+        encoding = kCFStringEncodingUTF16LE;
+    }
+    else
+    {
+        encoding = kCFStringEncodingUTF32LE;
+    }
+
+    if( !CFStringGetCString( decimalSeparatorRef, temp, sizeof( temp ), encoding ) )
 	{
         CCP_LOGWARN( "Localization failed to get decimal char. Falling back to default setting." );
         retVal = false;
 	}
 	else
 	{
-		decimalSep = temp[0];
+		decimalSep = *reinterpret_cast<wchar_t*>( temp );
 	}
 
-    if( !CFStringGetCString( groupingSeparatorRef, temp, len, kCFStringEncodingUTF8 ) )
+    if( !CFStringGetCString( groupingSeparatorRef, temp, sizeof( temp ), encoding ) )
 	{
         CCP_LOGWARN( "Localization failed to get thousands char. Falling back to default setting." );
         retVal = false;
 	}
 	else
 	{
-        thousandSep = temp[0];
+        thousandSep = *reinterpret_cast<wchar_t*>( temp );
 	}
 
     CFRelease( locale );
