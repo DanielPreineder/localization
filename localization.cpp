@@ -144,6 +144,13 @@ bool Language::SetNumberSeparators(LanguageID langID)
 	else
 	{
         thousandSep = *reinterpret_cast<wchar_t*>( temp );
+        // On macOS 11 French separator is a narrow non-breakable whitespace, that
+        // we don't have a glyph for in our font. So we use a "normal" non-breakable
+        // whitespace instead.
+        if( thousandSep == L'\x202f')
+        {
+            thousandSep = L'\xa0';
+        }
 	}
 
     CFRelease( locale );
