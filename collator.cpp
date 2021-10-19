@@ -14,7 +14,6 @@ Collator::Collator( const std::string& languageCode, IRoot* lockObj /* = 0 */ )
 	SetLocale( languageCode );
 }
 
-#if !__APPLE__
 // -------------------------------------------------------------
 // Description:
 //   The comparison function compares the character data stored in two different strings.
@@ -51,4 +50,3 @@ void Collator::SetLocale( const std::string& languageCode )
         m_locale = std::locale();
     }
 }
-#endif
