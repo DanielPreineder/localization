@@ -1,9 +1,10 @@
 project(EveLocalization VERSION 1.0.0)
 
-add_library(EveLocalization SHARED
+set(sources
     autoversion.h
     collator.cpp
     collator.h
+    collator.mm
     collator_blue.cpp
     formatters.cpp
     formatters.h
@@ -19,6 +20,10 @@ add_library(EveLocalization SHARED
     WrapPointList.h
     WrapPointList_Blue.cpp
 )
+
+add_library(EveLocalization SHARED
+    ${sources}
+)
 target_link_libraries(EveLocalization PRIVATE Blue BlueExposure)
 
 target_precompile_headers(EveLocalization PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/stdafx.h)
@@ -30,6 +35,9 @@ set_target_properties(EveLocalization PROPERTIES
 )
 
 if(APPLE)
+    enable_language(OBJCXX)
+    set_source_files_properties(${sources} PROPERTIES LANGUAGE OBJCXX)
+
     set_target_properties(
         EveLocalization
         PROPERTIES 
