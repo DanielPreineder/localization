@@ -5,6 +5,10 @@
 #include "localization.h"
 #include <locale>
 
+#if __APPLE__
+#import "Foundation/NSLocale.h"
+#endif
+
 // -------------------------------------------------------------
 // Description:
 //   A Collator performs locale-sensitive string comparisons.
@@ -36,7 +40,13 @@ public:
 private:
     // The locale that is supposed to be used for this collator
     LanguageID m_localeID;
+
+#if __APPLE__
+	NSLocale* m_locale = nullptr;
+	NSString* m_localeName = nullptr;
+#else
     std::locale m_locale;
+#endif
 };
 TYPEDEF_BLUECLASS( Collator );
 
