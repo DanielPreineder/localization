@@ -126,7 +126,7 @@ bool Language::SetNumberSeparators(LanguageID langID)
         encoding = kCFStringEncodingUTF32LE;
     }
 
-    if( !CFStringGetCString( decimalSeparatorRef, temp, sizeof( temp ), encoding ) )
+    if( !CFStringGetCString( decimalSeparatorRef, temp, sizeof( temp ), encoding ) || !CFStringGetLength( decimalSeparatorRef ) )
 	{
         CCP_LOGWARN( "Localization failed to get decimal char. Falling back to default setting." );
         retVal = false;
@@ -136,7 +136,7 @@ bool Language::SetNumberSeparators(LanguageID langID)
 		decimalSep = *reinterpret_cast<wchar_t*>( temp );
 	}
 
-    if( !CFStringGetCString( groupingSeparatorRef, temp, sizeof( temp ), encoding ) )
+    if( !CFStringGetCString( groupingSeparatorRef, temp, sizeof( temp ), encoding ) || !CFStringGetLength( groupingSeparatorRef ) )
 	{
         CCP_LOGWARN( "Localization failed to get thousands char. Falling back to default setting." );
         retVal = false;
