@@ -47,7 +47,7 @@ bool Parse( const std::wstring& sourceText, const Language& lang, const TokenCon
 
 		retVal << sourceText.substr( oldpos, pos-oldpos );
 
-		if ( NULL == ProcessToken( *token->second, lang, kwargs, retVal ) )
+		if ( ! ProcessToken( *token->second, lang, kwargs, retVal ) )
 		{
 			// ProcessToken sets the exception, we just need to bubble it up.
 			return false;

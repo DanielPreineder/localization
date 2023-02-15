@@ -3,7 +3,7 @@
 #define Formatters_H
 
 #include <iostream>
-#include <blue/Include/Blue.h>
+#include <Python.h>
 
 struct Token;
 struct Language;

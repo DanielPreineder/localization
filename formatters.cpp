@@ -338,7 +338,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 	}
 
 	PyObject* val = NULL;
-	bool ret = NULL;
+	bool ret = false;
 
 	MessageMapCit cit = lang.data.find( msgID );
 
@@ -481,7 +481,7 @@ size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE],
 	else
 	{
 		PyErr_SetString( PyExc_TypeError, "Numeric Formatter expects floating point or signed integer types." );
-		return NULL;
+		return 0;
 	}
 
 	// find the position of the decimal point
