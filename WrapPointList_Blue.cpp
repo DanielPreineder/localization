@@ -38,7 +38,7 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
 		isWhitespace = (*wrapPointList)[i].fWhiteSpace;
 		if ( i > 0 && ( (*wrapPointList)[i].fSoftBreak || ( prevWhitespace && ! isWhitespace ) ) )
 		{
-			PyObject* val = PyInt_FromLong( (long) i );
+			PyObject* val = PyLong_FromLong( (long) i );
 			PyList_Append( retVal, val );
 			Py_DECREF( val );
 		}
@@ -98,7 +98,7 @@ PyObject* PyGetWordbreakPoints( PyObject* self, PyObject* args )
 		isWhitespace = (*wrapPointList)[i].fWhiteSpace;
 		if ( (*wrapPointList)[i].fWordStop || ( prevWhitespace && ! isWhitespace ) )
 		{
-			PyObject* val = PyInt_FromLong( (long) i );
+			PyObject* val = PyLong_FromLong( (long) i );
 			PyList_Append( retVal, val );
 			Py_DECREF( val );
 		}

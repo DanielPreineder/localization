@@ -88,10 +88,6 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 			{
 				id = PyLong_AsUnsignedLongLong( key );
 			}
-			else if ( PyInt_Check( key ) )
-			{
-				id = PyInt_AsUnsignedLongLongMask( key );
-			}
 			else
 			{
 				PyErr_SetString( PyExc_TypeError, "Localization::LoadMessageData - dictionary must be keyed on int or long" );
@@ -132,7 +128,7 @@ PyObject* PyLoadMessageData( PyObject* module, PyObject* args )
 					PyObject *tmp = PyObject_Str(key);
 					if (tmp)
 					{
-						std::string  k( PyString_AS_STRING( tmp ) );
+						std::string  k( PyUnicode_AsUTF8( tmp ) );
 						Py_DECREF(tmp);
                         std::wstring v( PyUnicodeToWString( val ) );
 						md->metaData->insert( MetaData::value_type( k, v ) );
@@ -364,17 +360,17 @@ PyObject* PyGetMessageDataByID( PyObject* module, PyObject* args )
 				PyObject* temp = NULL;
 				PyObject* token = PyDict_New();
 
-				temp = PyString_FromStringAndSize( tok.variableName.c_str(), tok.variableName.size() );
+				temp = PyUnicode_FromStringAndSize( tok.variableName.c_str(), tok.variableName.size() );
 				PyDict_SetItemString( token, "variableName", temp);
 				Py_XDECREF( temp );
 
-				temp = PyInt_FromLong( (long) tok.variableType );
+				temp = PyLong_FromLong( (long) tok.variableType );
 				PyDict_SetItemString( token, "variableType", temp);
 				Py_XDECREF( temp );
 
 				if ( tok.propertyName.size() > 0 )
 				{
-					temp = PyString_FromStringAndSize( tok.propertyName.c_str(), tok.propertyName.size() );
+					temp = PyUnicode_FromStringAndSize( tok.propertyName.c_str(), tok.propertyName.size() );
 				}
 				else
 				{
@@ -384,7 +380,7 @@ PyObject* PyGetMessageDataByID( PyObject* module, PyObject* args )
 				PyDict_SetItemString( token, "propertyName", temp );
 				Py_XDECREF( temp );
 
-				temp = PyInt_FromLong( tok.flags );
+				temp = PyLong_FromLong( tok.flags );
 				PyDict_SetItemString( token, "args", temp );
 				Py_XDECREF( temp );
 
@@ -496,7 +492,7 @@ MAP_FUNCTION( "SetPrimaryLanguage", PySetPrimaryLanguage, "Set the default fallb
 // -------------------------------------------------------------
 PyObject* PyGetPrimaryLanguage( PyObject* module, PyObject* args )
 {
-	return PyString_FromString( LanguageIDToCode( g_settings.defaultLanguage ) ) ;
+	return PyUnicode_FromString( LanguageIDToCode( g_settings.defaultLanguage ) ) ;
 }
 MAP_FUNCTION( "GetPrimaryLanguage", PyGetPrimaryLanguage, "Returns the default fallback language." );
 
@@ -789,15 +785,15 @@ PyObject* PyFormatNumeric( PyObject* module, PyObject* args, PyObject* kwargs )
 		}
 	
 		tmp = PyDict_GetItemString( kwargs, "decimalPlaces" );
-		if ( tmp && tmp != Py_None && PyInt_Check( tmp ) )
+		if ( tmp && tmp != Py_None && PyLong_Check( tmp ) )
 		{
-			decimalPlaces = std::max( 0, std::min( 9, (int) PyInt_AS_LONG( tmp ) ) );
+			decimalPlaces = std::max( 0, std::min( 9, (int) PyLong_AS_LONG( tmp ) ) );
 		}
 
 		tmp = PyDict_GetItemString( kwargs, "leadingZeroes" );
-		if ( tmp && tmp != Py_None && PyInt_Check( tmp ) )
+		if ( tmp && tmp != Py_None && PyLong_Check( tmp ) )
 		{
-			leadingZeroes = std::max( 0, std::min( 9, (int) PyInt_AS_LONG( tmp ) ) );
+			leadingZeroes = std::max( 0, std::min( 9, (int) PyLong_AS_LONG( tmp ) ) );
 		}
 	}
 

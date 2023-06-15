@@ -103,7 +103,7 @@ bool ProcessToken( const Token& token, const Language& lang, PyObject* kwargs, s
 		ret = ProcessConditional( token, lang, value, retVal );
 	}
 	else
-	{
+	{	
 		switch ( token.variableType )
 		{
 			case VARIABLETYPE_NUMERIC:
@@ -217,10 +217,6 @@ bool ProcessConditional( const Token& token, const Language& lang, PyObject* val
 	if ( PyFloat_Check ( value ) )
 	{
 		val = (int) ceil( PyFloat_AS_DOUBLE( value ) );
-	}
-	else if ( PyInt_Check ( value ) )
-	{
-		val = PyInt_AS_LONG( value );
 	}
 	else if ( PyLong_Check ( value ) )
 	{

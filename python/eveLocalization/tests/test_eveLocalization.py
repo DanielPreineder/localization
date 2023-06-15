@@ -384,10 +384,6 @@ class LocalizationUnittests(unittest.TestCase):
         expectedResult = u"Numeric formatting test: 9999999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
-        result = el.GetMessageByID(10, "en-us", number=9999999L)
-        expectedResult = u"Numeric formatting test: 9999999"
-        self.assertTrue(result == expectedResult,
-                        "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(10, "en-us", number=9999999.12)
         expectedResult = u"Numeric formatting test: 9999999.12"
         self.assertTrue(result == expectedResult,

@@ -45,7 +45,7 @@ set(sources
     WrapPointList_Blue.cpp
 )
 
-add_library(EveLocalization SHARED
+ccp_add_library(EveLocalization SHARED
     ${headers}
     ${sources}
 )
