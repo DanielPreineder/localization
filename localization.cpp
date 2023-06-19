@@ -240,19 +240,22 @@ bool LoadToken( PyObject* dict, Token& token )
 			Py_ssize_t s = 0;
 			while ( PyDict_Next( value, &s, &k, &v ) )
 			{
-				if ( ! PyUnicode_Check( k ) )
+				PyObject* k_ascii = PyUnicode_AsASCIIString( k );
+
+				if ( !k_ascii )
 				{
-					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg key must be a string." );
+					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg key must be ascii string." );
 					return false;
 				}
 				
-				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) && ! PyUnicode_Check( v ) )
+				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) )
 				{
-					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be unicode, string or number." );
+					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be unicode or number." );
 					return false;
 				}
-
-				std::string key( PyUnicode_AsUTF8( k ) );
+				
+				std::string key( PyBytes_AsString( k_ascii ) );
+				Py_DecRef( k_ascii );
 
 				if ( ! token.kwargs )
 				{
@@ -600,7 +603,7 @@ CFStringRef ToStringRef( const std::wstring& string )
 static struct PyModuleDef ModuleDef =
 {
 	PyModuleDef_HEAD_INIT,
-	CCP_STRINGIZE(CCP_CONCATENATE(_evelocalization, CCP_BUILD_FLAVOR) ),
+	CCP_STRINGIZE( CCP_CONCATENATE( _evelocalization, CCP_BUILD_FLAVOR ) ),
 	"",
 	-1,
 	NULL
@@ -610,7 +613,7 @@ static PyObject* StartDLL()
 {
 	BeClasses->RegisterClasses( BlueRegistration::GetClassRegs() );
 	
-	PyObject* module = PyModule_Create(&ModuleDef);
+	PyObject* module = PyModule_Create( &ModuleDef );
 	
 	PyMethodDef pmd[] = { 
 							{ 
@@ -648,13 +651,13 @@ static PyObject* StartDLL()
 }
 
 #ifdef _WIN32
-BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
+BOOL APIENTRY DllMain( HINSTANCE instance, DWORD reason, LPVOID )
 {
-	if (reason == DLL_PROCESS_ATTACH)
+	if ( reason == DLL_PROCESS_ATTACH )
 	{
-		DisableThreadLibraryCalls(instance);
+		DisableThreadLibraryCalls( instance );
 	}
-	else if (reason == DLL_PROCESS_DETACH)
+	else if ( reason == DLL_PROCESS_DETACH )
 	{
 		;
 	}
@@ -667,7 +670,7 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 //-----------------------------------------------------------------------------
 extern "C"
 #ifdef _WIN32
-__declspec(dllexport)
+__declspec( dllexport )
 #else
 __attribute__((visibility ("default")))
 #endif

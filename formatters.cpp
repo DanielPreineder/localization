@@ -26,13 +26,26 @@ const unsigned int GROUPING_VALUE = 3;
 // -------------------------------------------------------------
 bool SimpleValueFormatter( const Token& token, const Language& lang, PyObject* value, PyObject* kwargs, std::wstringstream& retVal )
 {
-	if ( !PyUnicode_Check( value ) )
+	std::wstring val;
+	if ( PyUnicode_Check( value ) )
 	{
-		retVal << "Value passed to SimpleValueFormatter must be a string";
-		return false;
+		val = PyUnicodeToWString( value );
 	}
+	else
+	{
+		PyObject* value_repr = PyObject_Repr( value );
 
-	std::wstring val( PyUnicodeToWString(value) );
+		if ( !value_repr )
+		{
+			retVal << "Error converting value in SimpleValueFormatter";
+			return false;
+		}
+
+		val = PyUnicodeToWString( value_repr );
+
+		Py_DECREF( value_repr );
+	}
+	
 	return SimpleValueFormatter( token, lang, val, kwargs, retVal );
 }
 
@@ -123,42 +136,73 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 			}
 
 			size_t len = PySequence_Fast_GET_SIZE( linkData );
-			if (len == 0)
+			if ( len == 0 )
 			{
 				Py_DECREF( linkData );
 				return false;
 			}
 
-			PyObject* tmp = PySequence_Fast_GET_ITEM(linkData, 0);
-			if ( ! tmp )
+			PyObject* linkDataItem = PySequence_Fast_GET_ITEM( linkData, 0 );
+			if ( !linkDataItem )
 			{
 				Py_DECREF( linkData );
 				return false;
 			}
-			retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( tmp ) ) << L":";
 
-			for ( size_t i = 1; i < len; ++i )
+			if (PyUnicode_Check( linkDataItem ) )
 			{
-				if ( i > 1 )
+				retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( linkDataItem ) ) << L":";
+			}
+			else
+			{
+				PyObject* repr = PyObject_Repr( linkDataItem );
+
+				if (!repr)
+				{
+					PyErr_SetString( PyExc_RuntimeError, "Link data must be a string or number." );
+					Py_DECREF( linkData );
+					return false;
+				}
+
+				retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( repr ) ) << L":";
+
+				Py_DECREF( repr );
+			}
+
+			for (size_t i = 1; i < len; ++i)
+			{
+				if (i > 1)
 				{
 					retVal << L"//";
 				}
 
-				PyObject* tmp = PySequence_Fast_GET_ITEM( linkData, i );
-				if ( ! tmp )
+				PyObject* linkDataItem = PySequence_Fast_GET_ITEM( linkData, i );
+				if ( !linkDataItem )
 				{
 					Py_DECREF( linkData );
 					return false;
 				}
 
-				if (PyNumber_Check(tmp))
+				if ( PyUnicode_Check( linkDataItem ) )
 				{
-					retVal << PyLong_AS_LONG(tmp);
+					retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( linkDataItem ) );
 				}
-				else if (PyUnicode_Check(tmp))
+				else
 				{
-					retVal << reinterpret_cast<const wchar_t*>(PyUnicode_AS_UNICODE(tmp));
+					PyObject* repr = PyObject_Repr( linkDataItem );
+
+					if ( !repr )
+					{
+						PyErr_SetString( PyExc_TypeError, "linkinfo arguments must be of type string or number." );
+						Py_DECREF( linkData );
+						return false;
+					}
+
+					retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( repr ) );
+
+					Py_DECREF( repr );
 				}
+
 			}
 
 			Py_DECREF( linkData );
@@ -386,7 +430,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 // Return value:
 //   The double value rounded to decimals.
 // -------------------------------------------------------------
-double round(double val, unsigned int decimals)
+double round( double val, unsigned int decimals )
 {
 	//we obtain the sign to calculate positive always
 	double sign = val != 0.0 ? fabs( val ) / val : 1.0;

@@ -311,9 +311,16 @@ class LocalizationUnittests(unittest.TestCase):
         expectedResult = u"This is a string with no tags."
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
-        # a basic tag
+        
+        # a basic tag ( with string parameter contents)
         result = el.GetMessageByID(1, "en-us", thing="basic tag")
         expectedResult = u"This is a basic tag with no parameters."
+        self.assertTrue(result == expectedResult,
+                        "Result did not match input: %s != %s" % (result, expectedResult))
+        
+        # a basic tag ( with numeric parameter contents)
+        result = el.GetMessageByID(1, "en-us", thing=0)
+        expectedResult = u"This is a 0 with no parameters."
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
@@ -422,9 +429,27 @@ class LocalizationUnittests(unittest.TestCase):
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
-        # Link creation mechanism
+        # Link creation mechanism ( With numeric arguments)
         result = el.GetMessageByID(14, "en-us", linktext="Click Here!", linkdata=("linkinfo", 100, 200, 300, 400, 500))
         expectedResult = u"This is a linkinfo link: <a href=linkinfo:100//200//300//400//500>Click Here!</a>"
+        self.assertTrue(result == expectedResult,
+                        "Result did not match input: %s != %s" % (result, expectedResult))
+        
+        # Link creation mechanism ( With string arguments)
+        result = el.GetMessageByID(14, "en-us", linktext="Click Here!", linkdata=("linkinfo", "100", "200", "300", "400", "500"))
+        expectedResult = u"This is a linkinfo link: <a href=linkinfo:100//200//300//400//500>Click Here!</a>"
+        self.assertTrue(result == expectedResult,
+                        "Result did not match input: %s != %s" % (result, expectedResult))
+        
+        # Link creation mechanism ( With numeric linkinfo argument)
+        result = el.GetMessageByID(14, "en-us", linktext="Click Here!", linkdata=(0, "100", "200", "300", "400", "500"))
+        expectedResult = u"This is a linkinfo link: <a href=0:100//200//300//400//500>Click Here!</a>"
+        self.assertTrue(result == expectedResult,
+                        "Result did not match input: %s != %s" % (result, expectedResult))
+        
+        # Link creation mechanism ( With numeric linkinfo argument)
+        result = el.GetMessageByID(14, "en-us", linktext=101.0123, linkdata=(0, "100", "200", "300", "400", "500"))
+        expectedResult = u"This is a linkinfo link: <a href=0:100//200//300//400//500>101.0123</a>"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
