@@ -26,26 +26,15 @@ const unsigned int GROUPING_VALUE = 3;
 // -------------------------------------------------------------
 bool SimpleValueFormatter( const Token& token, const Language& lang, PyObject* value, PyObject* kwargs, std::wstringstream& retVal )
 {
-	std::wstring val;
-	if ( PyUnicode_Check( value ) )
+	PyObject* unicodeValue = PyObject_Str( value );
+	if ( ! unicodeValue )
 	{
-		val = PyUnicodeToWString( value );
+		retVal << "Error converting value in SimpleValueFormatter";
+		return false;
 	}
-	else
-	{
-		PyObject* value_repr = PyObject_Repr( value );
 
-		if ( !value_repr )
-		{
-			retVal << "Error converting value in SimpleValueFormatter";
-			return false;
-		}
-
-		val = PyUnicodeToWString( value_repr );
-
-		Py_DECREF( value_repr );
-	}
-	
+	std::wstring val( PyUnicodeToWString( unicodeValue ) );
+	Py_DECREF( unicodeValue );
 	return SimpleValueFormatter( token, lang, val, kwargs, retVal );
 }
 
@@ -142,32 +131,15 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 				return false;
 			}
 
-			PyObject* linkDataItem = PySequence_Fast_GET_ITEM( linkData, 0 );
-			if ( !linkDataItem )
+			PyObject* tmp = PyObject_Str(PySequence_Fast_GET_ITEM(linkData, 0));
+			if (!tmp)
 			{
-				Py_DECREF( linkData );
+				Py_DECREF(linkData);
 				return false;
 			}
+			retVal << L"<a href=" << reinterpret_cast<const wchar_t*>(PyUnicode_AS_UNICODE(tmp)) << L":";
 
-			if (PyUnicode_Check( linkDataItem ) )
-			{
-				retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( linkDataItem ) ) << L":";
-			}
-			else
-			{
-				PyObject* repr = PyObject_Repr( linkDataItem );
-
-				if (!repr)
-				{
-					PyErr_SetString( PyExc_RuntimeError, "Link data must be a string or number." );
-					Py_DECREF( linkData );
-					return false;
-				}
-
-				retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( repr ) ) << L":";
-
-				Py_DECREF( repr );
-			}
+			Py_XDECREF(tmp);
 
 			for (size_t i = 1; i < len; ++i)
 			{
@@ -176,32 +148,14 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 					retVal << L"//";
 				}
 
-				PyObject* linkDataItem = PySequence_Fast_GET_ITEM( linkData, i );
-				if ( !linkDataItem )
+				PyObject* tmp = PyObject_Str(PySequence_Fast_GET_ITEM(linkData, i));
+				if (!tmp)
 				{
-					Py_DECREF( linkData );
+					Py_DECREF(linkData);
 					return false;
 				}
-
-				if ( PyUnicode_Check( linkDataItem ) )
-				{
-					retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( linkDataItem ) );
-				}
-				else
-				{
-					PyObject* repr = PyObject_Repr( linkDataItem );
-
-					if ( !repr )
-					{
-						PyErr_SetString( PyExc_TypeError, "linkinfo arguments must be of type string or number." );
-						Py_DECREF( linkData );
-						return false;
-					}
-
-					retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( repr ) );
-
-					Py_DECREF( repr );
-				}
+				retVal << reinterpret_cast<const wchar_t*>(PyUnicode_AS_UNICODE(tmp));
+				Py_XDECREF(tmp);
 
 			}
 
