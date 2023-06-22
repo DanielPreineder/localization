@@ -240,12 +240,9 @@ bool LoadToken( PyObject* dict, Token& token )
 			Py_ssize_t s = 0;
 			while ( PyDict_Next( value, &s, &k, &v ) )
 			{
-				
-				
 				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) )
 				{
 					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be string or number." );
-					Py_DecRef( keyAsAscii );
 					return false;
 				}
 
