@@ -240,22 +240,25 @@ bool LoadToken( PyObject* dict, Token& token )
 			Py_ssize_t s = 0;
 			while ( PyDict_Next( value, &s, &k, &v ) )
 			{
-				PyObject* k_ascii = PyUnicode_AsASCIIString( k );
+				
+				
+				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) )
+				{
+					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be string or number." );
+					Py_DecRef( keyAsAscii );
+					return false;
+				}
 
-				if ( !k_ascii )
+				PyObject* keyAsAscii = PyUnicode_AsASCIIString( k );
+
+				if ( !keyAsAscii )
 				{
 					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg key must be ascii string." );
 					return false;
 				}
 				
-				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) )
-				{
-					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be unicode or number." );
-					return false;
-				}
-				
-				std::string key( PyBytes_AsString( k_ascii ) );
-				Py_DecRef( k_ascii );
+				std::string key( PyBytes_AsString( keyAsAscii ) );
+				Py_DecRef( keyAsAscii );
 
 				if ( ! token.kwargs )
 				{
