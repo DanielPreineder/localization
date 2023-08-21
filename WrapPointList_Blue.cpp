@@ -57,7 +57,7 @@ PyObject* PyGetLinebreakPoints( PyObject* self, PyObject* args )
         CFRange tokenRange = CFStringTokenizerGetCurrentTokenRange( tokenizer );
         if( tokenRange.location > 0 )
         {
-            PyObject* val = PyInt_FromLong( (long) tokenRange.location );
+            PyObject* val = PyLong_FromLong( (long) tokenRange.location );
             PyList_Append( retVal, val );
             Py_DECREF( val );
         }
