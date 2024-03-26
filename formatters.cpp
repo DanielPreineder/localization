@@ -137,8 +137,9 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 				Py_DECREF(linkData);
 				return false;
 			}
-			retVal << L"<a href=" << reinterpret_cast<const wchar_t*>(PyUnicode_AS_UNICODE(tmp)) << L":";
-
+            wchar_t *tmpWChar = PyUnicode_AsWideCharString(tmp, nullptr);
+			retVal << L"<a href=" << tmpWChar << L":";
+            PyMem_Free(tmpWChar);
 			Py_XDECREF(tmp);
 
 			for (size_t i = 1; i < len; ++i)
@@ -154,7 +155,9 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 					Py_DECREF(linkData);
 					return false;
 				}
-				retVal << reinterpret_cast<const wchar_t*>(PyUnicode_AS_UNICODE(tmp));
+                wchar_t *tmpWideChar = PyUnicode_AsWideCharString(tmp, nullptr);
+				retVal << tmpWideChar;
+                PyMem_Free(tmpWideChar);
 				Py_XDECREF(tmp);
 
 			}
@@ -209,9 +212,11 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 		return false;
 	}
 
-	format = reinterpret_cast<wchar_t*>( PyUnicode_AsUnicode( cit->second ) );
+    // Get the formatstring, remember to free the allocated memory on all return code paths.
+    format = PyUnicode_AsWideCharString(cit->second, nullptr);
 	if ( ! format )
 	{
+        PyMem_Free(format); // Freeing memory allocated by PyUnicode_AsWideCharString()
 		return false;
 	}
 
@@ -256,6 +261,7 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	else
 	{
 		PyErr_SetString( PyExc_TypeError, "Time value must be float (aka python time), long (aka blue time) or tuple (from time info)." );
+        PyMem_Free(format); // Freeing memory allocated by PyUnicode_AsWideCharString()
 		return false;
 	}
 
@@ -286,6 +292,7 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 		wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, format, &timeInfo );
 	}
 	std::wstring buf(buffer);
+    PyMem_Free(format); // Freeing memory allocated by PyUnicode_AsWideCharString()
 
 	return SimpleValueFormatter( token, lang, buf, kwargs, retVal );
 }

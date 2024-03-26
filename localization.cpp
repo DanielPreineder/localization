@@ -547,7 +547,10 @@ switch( languageID )
 
 std::wstring PyUnicodeToWString( PyObject* unicode )
 {
-    return std::wstring( reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( unicode ) ), PyUnicode_GET_SIZE( unicode ) );
+    wchar_t *tmp = PyUnicode_AsWideCharString(unicode, nullptr);
+    std::wstring ss(tmp);
+    PyMem_Free(tmp);
+    return ss;
 }
 
 #ifdef __APPLE__
