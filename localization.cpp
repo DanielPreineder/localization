@@ -547,10 +547,10 @@ switch( languageID )
 
 std::wstring PyUnicodeToWString( PyObject* unicode )
 {
-    wchar_t *tmp = PyUnicode_AsWideCharString(unicode, nullptr);
-    std::wstring ss(tmp);
-    PyMem_Free(tmp);
-    return ss;
+	wchar_t* tmp = PyUnicode_AsWideCharString( unicode, nullptr );
+	std::wstring ss( tmp );
+	PyMem_Free( tmp );
+	return ss;
 }
 
 #ifdef __APPLE__
