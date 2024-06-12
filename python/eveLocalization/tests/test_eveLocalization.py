@@ -544,6 +544,11 @@ class LocalizationUnittests(unittest.TestCase):
         d = el.WrapPointList(s, "en-us")
         self.assertFalse(d.GetLinebreakPoints())
 
+    def testParseSentenceNoTokens(self):
+        sentence = "The quick brown fox jumped over the lazy dog."
+        result = el.Parse(sentence, "en-us", {})
+        self.assertEqual(result, sentence)
+
 
 if __name__ == '__main__':
     unittest.main()
