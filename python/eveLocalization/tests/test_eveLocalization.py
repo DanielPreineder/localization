@@ -387,12 +387,14 @@ class LocalizationUnittests(unittest.TestCase):
                         "Result did not match input %s != %s" % (result, expectedResult))
 
         # Numeric Quantities
+        thousandSeparator = el.GetThousandSeparator("")
+        decimalSeparator = el.GetDecimalSeparator("")
         result = el.GetMessageByID(10, "en-us", number=9999999)
         expectedResult = u"Numeric formatting test: 9999999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(10, "en-us", number=9999999.12)
-        expectedResult = u"Numeric formatting test: 9999999.12"
+        expectedResult = f"Numeric formatting test: 9999999{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(11, "en-us", number=9999999.12)
@@ -400,24 +402,24 @@ class LocalizationUnittests(unittest.TestCase):
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(12, "en-us", number=9999999.123)
-        expectedResult = u"Numeric formatting test: 9,999,999.12"
+        expectedResult = f"Numeric formatting test: 9{thousandSeparator}999{thousandSeparator}999{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(13, "en-us", number=9999999.123)
-        expectedResult = u"Numeric formatting test: 9999999.12"
+        expectedResult = f"Numeric formatting test: 9999999{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(13, "en-us", number=9999999.1)
-        expectedResult = u"Numeric formatting test: 9999999.10"
+        expectedResult = f"Numeric formatting test: 9999999{decimalSeparator}10"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(13, "en-us", number=-9999999.1)
-        expectedResult = u"Numeric formatting test: -9999999.10"
+        expectedResult = f"Numeric formatting test: -9999999{decimalSeparator}10"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         # Numeric conditional statements
         result = el.GetMessageByID(3, "en-us", numSeconds=20)
-        expectedResult = u"You have 20 seconds to comply."
+        expectedResult = "You have 20 seconds to comply."
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(3, "en-us", numSeconds=1)
@@ -425,7 +427,7 @@ class LocalizationUnittests(unittest.TestCase):
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.GetMessageByID(3, "en-us", numSeconds=1.7)
-        expectedResult = u"You have 1.70 seconds to comply."
+        expectedResult = f"You have 1{decimalSeparator}70 seconds to comply."
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
@@ -458,48 +460,50 @@ class LocalizationUnittests(unittest.TestCase):
         """
         This is invoking the standalone method for number formatting
         """
+        decimalSeparator = el.GetDecimalSeparator("")
+        thousandSeparator = el.GetThousandSeparator("")
         result = el.FormatNumeric(999999, "en-us", useGrouping=False, decimalPlaces=0)
-        expectedResult = u"999999"
+        expectedResult = "999999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(999999, "en-us", useGrouping=True, decimalPlaces=0)
-        expectedResult = u"999,999"
+        expectedResult = f"999{thousandSeparator}999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(999999.123, "en-us", useGrouping=True)
-        expectedResult = u"999,999.12"
+        expectedResult = f"999{thousandSeparator}999{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(999999.123, "en-us", useGrouping=True, decimalPlaces=1)
-        expectedResult = u"999,999.1"
+        expectedResult = f"999{thousandSeparator}999{decimalSeparator}1"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(999999.123, "en-us", useGrouping=True, decimalPlaces=0)
-        expectedResult = u"999,999"
+        expectedResult = f"999{thousandSeparator}999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(-999999.123, "en-us", useGrouping=True, decimalPlaces=0)
-        expectedResult = u"-999,999"
+        expectedResult = f"-999{thousandSeparator}999"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(-999999.123, "en-us", useGrouping=True, decimalPlaces=2)
-        expectedResult = u"-999,999.12"
+        expectedResult = f"-999{thousandSeparator}999{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(0.0, "en-us")
-        expectedResult = u"0.00" # decimalPlaces defaults to 2!
+        expectedResult = f"0{decimalSeparator}00" # decimalPlaces defaults to 2!
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(-9.123, "en-us", useGrouping=True, decimalPlaces=2, leadingZeroes=2)
-        expectedResult = u"-09.12"
+        expectedResult = f"-09{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(-9000.123, "en-us", useGrouping=True, decimalPlaces=2, leadingZeroes=5)
-        expectedResult = u"-09,000.12"
+        expectedResult = f"-09{thousandSeparator}000{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
         result = el.FormatNumeric(-9.123, "en-us", useGrouping=True, decimalPlaces=2, leadingZeroes=5)
-        expectedResult = u"-00,009.12"
+        expectedResult = f"-00{thousandSeparator}009{decimalSeparator}12"
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
