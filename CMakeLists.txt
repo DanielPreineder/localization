@@ -94,11 +94,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
                     COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
             )
-            if(WIN32)
-                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:EveLocalization>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
-            else()
-                message(FATAL_ERROR "Unsupported platform")
-            endif ()
+            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:EveLocalization>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
         endforeach()
     endif()
 
