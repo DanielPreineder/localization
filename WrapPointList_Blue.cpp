@@ -133,7 +133,7 @@ PyObject* Py__init__(PyObject *self, PyObject *args)
 		return nullptr;
 	}
 #ifdef _WIN32
-    pThis->m_wrapPointListCount = static_cast<int>(textLength);
+    pThis->m_wrapPointListCount = textLength;
 
 	if ( pThis->m_wrapPointListCount > (size_t) INT_MAX )
 	{
@@ -146,7 +146,7 @@ PyObject* Py__init__(PyObject *self, PyObject *args)
 	memset( &control, 0, sizeof( SCRIPT_CONTROL ) );
 	control.uDefaultLanguage = CodeToLanguageID( langStr );
 
-	if ( ! pThis->TextAnalyze( textStr, (int)pThis->m_wrapPointListCount, &control, nullptr ) )
+	if ( ! pThis->TextAnalyze( textStr, pThis->m_wrapPointListCount, &control, nullptr ) )
 	{
 		PyErr_SetString( PyExc_SystemError, "Text analysis failed, cannot determine wrap points.");
 		PyOS->PyFlushError( "WrapPointList::Initialize" );
