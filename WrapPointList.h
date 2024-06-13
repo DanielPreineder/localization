@@ -56,10 +56,10 @@ private:
 	void MergeSimpleScripts();
 	void BuildItemRunList();
 
-	bool TextAnalyze( WCHAR* wstr, int wlen, SCRIPT_CONTROL* scriptControl, SCRIPT_STATE* scriptState );
+	bool TextAnalyze( WCHAR* wstr, size_t wlen, SCRIPT_CONTROL* scriptControl, SCRIPT_STATE* scriptState );
 
 	SCRIPT_LOGATTR* m_wrapPointList;
-	int             m_wrapPointListCount;
+	size_t m_wrapPointListCount;
 
 	// The itemRun list that will be converted into the WrapPointList
 	int      m_itemRunCount;

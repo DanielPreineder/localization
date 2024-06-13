@@ -113,18 +113,24 @@ PyObject* PyGetWordbreakPoints( PyObject* self, PyObject* args )
 
 PyObject* Py__init__(PyObject *self, PyObject *args)
 {
-	WrapPointList* pThis = BluePythonCast<WrapPointList*>( self );
-	Py_UNICODE *textStr = 0;
-    int textLength = 0;
-	const char* langStr = 0;
-	if (!PyArg_ParseTuple(args, "u#s", &textStr, &textLength, &langStr))
+	auto* pThis = BluePythonCast<WrapPointList*>( self );
+	PyObject* textObject{nullptr};
+    Py_ssize_t textLength{0};
+	const char* langStr{nullptr};
+	if (!PyArg_ParseTuple(args, "Us", &textObject, &langStr))
 	{
 		PyErr_SetString( PyExc_ValueError, 
 			"Error in constructor arguments:\n"
 			"text: Unicode string, the text you wish to analyze.\n" 
 			"languageCode: The language to use for analysis, such as en-us or ja." );
 		PyOS->PyFlushError( "WrapPointList::Py__init__" );
-		return NULL;
+		return nullptr;
+	}
+	ON_BLOCK_EXIT( [textObject] { Py_DECREF( textObject ); } );
+	wchar_t* textStr = PyUnicode_AsWideCharString(textObject, &textLength );
+	if( !textStr )
+	{
+		return nullptr;
 	}
 #ifdef _WIN32
     pThis->m_wrapPointListCount = textLength;
@@ -133,18 +139,18 @@ PyObject* Py__init__(PyObject *self, PyObject *args)
 	{
 		PyErr_SetString( PyExc_ValueError, "The passed in string is too long." );
 		PyOS->PyFlushError( "WrapPointList::Initialize" );
-		return NULL;
+		return nullptr;
 	};
 
 	SCRIPT_CONTROL control;
 	memset( &control, 0, sizeof( SCRIPT_CONTROL ) );
 	control.uDefaultLanguage = CodeToLanguageID( langStr );
 
-	if ( ! pThis->TextAnalyze( textStr, (int)pThis->m_wrapPointListCount, &control, NULL ) )
+	if ( ! pThis->TextAnalyze( textStr, pThis->m_wrapPointListCount, &control, nullptr ) )
 	{
 		PyErr_SetString( PyExc_SystemError, "Text analysis failed, cannot determine wrap points.");
 		PyOS->PyFlushError( "WrapPointList::Initialize" );
-		return NULL;
+		return nullptr;
 	}
 
 	pThis->m_wrapPointList = CCP_NEW( "EveLocalization/WrapPoints/WrapPointList" ) SCRIPT_LOGATTR[pThis->m_wrapPointListCount];
