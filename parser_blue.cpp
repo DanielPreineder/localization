@@ -61,7 +61,6 @@ PyObject* PyParse( PyObject* module, PyObject* args, PyObject* kwargs )
 	{
 		return nullptr;
 	}
-	ON_BLOCK_EXIT( [sourceTextObject, tokenDict] { Py_DECREF( sourceTextObject ); Py_DECREF( tokenDict ); } );
 	sourceText = PyUnicode_AsWideCharString(sourceTextObject, nullptr);
 	LanguageID langID = CodeToLanguageID( languageCode );
 
