@@ -126,7 +126,6 @@ PyObject* Py__init__(PyObject *self, PyObject *args)
 		PyOS->PyFlushError( "WrapPointList::Py__init__" );
 		return nullptr;
 	}
-	ON_BLOCK_EXIT( [textObject] { Py_DECREF( textObject ); } );
 	wchar_t* textStr = PyUnicode_AsWideCharString(textObject, &textLength );
 	if( !textStr )
 	{
