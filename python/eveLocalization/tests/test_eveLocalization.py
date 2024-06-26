@@ -523,32 +523,33 @@ class LocalizationUnittests(unittest.TestCase):
         expectedResult = [4, 10, 16, 20, 27, 32, 36, 41]
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
-        c = el.WrapPointList(u"EVE\u59D0\u59B9\u4F1A\u7684\u4E3B\u8981\u804C\u8D23\u662F\u5411\u90A3\u4E9B\u906D\u9047\u6218\u4E89\u3001\u9965\u8352\u751A\u81F3\u8FF7\u5931\u592A\u7A7A\u7684\u4EBA\u63D0\u4F9B\u4EBA\u9053\u4E3B\u4E49\u63F4\u52A9\u3002\u7136\u800C\uFF0CEVE\u59D0\u59B9\u6D4E\u4F1A\u7684\u5B58\u5728\u5EFA\u7ACB\u4E8E\u4E0E\u79D1\u5B66\u56E0\u7D20\u76F8\u5173\u7684\u5F3A\u5927\u5B97\u6559\u4FE1\u4EF0\u4E4B\u4E0A\u3002\u4ED6\u4EEC\u76F8\u4FE1EVE\u4E4B\u95E8\u662F\u5929\u5802\u7684\u5165\u53E3\u2014\u2014\u795E\u5728\u95E8\u7684\u53E6\u5916\u4E00\u8FB9\u3002\u4ED6\u4EEC\u4E0D\u5149\u5E2E\u52A9\u90A3\u4E9B\u9700\u8981\u5E2E\u52A9\u7684\u4EBA\uFF0C\u8FD8\u5FD9\u4E8E\u8FDB\u884C\u5173\u4E8EEVE\u4E4B\u95E8\u7684\u79D1\u5B66\u8BD5\u9A8C\uFF0C\u5E0C\u671B\u80FD\u591F\u66F4\u6DF1\u5165\u5730\u4E86\u89E3\u90A3\u91CC\u8574\u6DB5\u7684\u529B\u91CF\u3002", "zh")
-        result = c.GetLinebreakPoints()
-        if sys.platform == "win32":
-            expectedResult = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22,
-                              23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
-                              46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61,
-                              62, 63, 64, 65, 66, 67, 68, 69, 70, 73, 74, 75, 76, 80, 81, 82, 83,
-                              84, 85, 86, 90, 91, 92, 93, 94, 95, 96, 99, 100, 101, 102, 103,
-                              104, 105, 106, 107, 108, 109, 110, 111, 114, 115, 116, 117, 118,
-                              119, 120, 124, 125, 126, 127, 128, 129, 132, 133, 134, 135, 136, 137,
-                              138, 139, 140, 141, 142, 143, 144, 145, 146, 147]
-        elif sys.platform == "darwin":
-            expectedResult = [3, 5, 7, 9, 11, 12, 13, 15, 18, 20, 22, 24, 26, 29, 30, 32, 36, 39, 42,
-                              45, 47, 48, 50, 52, 54, 55, 56, 58, 60, 63, 65, 67, 69, 72, 74, 76, 79,
-                              80, 81, 82, 85, 89, 90, 91, 93, 95, 98, 100, 102, 104, 106, 108, 111, 113,
-                              114, 116, 118, 120, 123, 124, 126, 128, 131, 133, 135, 136, 139, 141, 143, 146]
-        else:
-            raise RuntimeError(f"Don't know what line break points to expect on platform '{sys.platform}'")
-
-        self.assertTrue(result == expectedResult,
-                        "Result did not match input: %s != %s" % (result, expectedResult))
         d = el.WrapPointList(u"1, 4,   5, 6. 1. 2. 3.", "en-us")
         result = d.GetLinebreakPoints()
         expectedResult = [3, 8, 11, 14, 17, 20]
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
+
+    def testWrapPointsForChinese(self):
+        """
+        According to Unicode, lines can break anywhere except before or after certain characters,
+        and these may depend on user preference:
+ 
+        "The second style of context analysis is used with East Asian ideographic and syllabic scripts.
+         In these scripts, lines can break anywhere, except before or after certain characters.
+        The precise set of prohibited line breaks may depend on user preference or local custom and is commonly tailorable."
+            - https://www.unicode.org/reports/tr14/#Algorithm
+
+        Since line breaks are determined by the OS APIs, we simply check that we get sane looking results.
+        """
+        CHINESE_STRING = "EVE姐妹会的主要职责是向那些遭遇战争、饥荒甚至迷失太空的人提供人道主义援助。然而，EVE姐妹济会的存在建立于与科学因素相关的强大宗教信仰之上。他们相信EVE之门是天堂的入口——神在门的另外一边。他们不光帮助那些需要帮助的人，还忙于进行关于EVE之门的科学试验，希望能够更深入地了解那里蕴涵的力量。"
+        c = el.WrapPointList(CHINESE_STRING, "zh")
+        result = c.GetLinebreakPoints()
+
+        self.assertGreater(len(result), 0, "List should contain at least one wrap point")
+        self.assertEqual(result, sorted(result), "Results should be sorted")
+        self.assertEqual(result, sorted(list(set(result))), "Results should not contain duplicates")
+        for i in result:
+            self.assertIsInstance(i, int, "Line break points should be integers")
 
     def testWrapPointsForRTLLanguage(self):
         """
