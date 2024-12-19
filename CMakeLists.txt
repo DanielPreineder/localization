@@ -45,7 +45,7 @@ set(sources
     WrapPointList_Blue.cpp
 )
 
-add_library(EveLocalization SHARED
+ccp_add_library(EveLocalization SHARED
     ${headers}
     ${sources}
 )
@@ -76,8 +76,28 @@ elseif(WIN32)
 
 endif()
 
+if(WIN32)
+    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
+elseif(APPLE)
+    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.sh")
+endif()
+
 # Provide an install target iff this is the top level project only
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    option(BUILD_TESTING "Build tests. Enabled by default." ON)
+    include(CTest)
+    if(BUILD_TESTING)
+        # add the python tests
+        list(APPEND PYTHON_TESTS test_eveLocalization.py)
+        foreach(PYTHON_TEST ${PYTHON_TESTS})
+            add_test(NAME ${PYTHON_TEST}
+                    COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
+            )
+            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:EveLocalization>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+        endforeach()
+    endif()
+
     # Install rule to ensure that our runtime and linker files are in the expected, platform-specific folders
     install(
         TARGETS EveLocalization

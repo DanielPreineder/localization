@@ -185,48 +185,48 @@ bool LoadToken( PyObject* dict, Token& token )
 
 	while ( PyDict_Next( dict, &p, &key, &value ) )
 	{
-		if ( ! PyString_Check( key ) )
+		if ( ! PyUnicode_Check( key ) )
 		{
-			PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - token must be keyed on ascii string" );
+			PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - token must be keyed on a string" );
 			return false;
 		}
-		char* keyText = PyString_AsString( key );
+		const char* keyText = PyUnicode_AsUTF8( key );
 
 		if ( 0 == strcmp( keyText, "args" ) )
 		{
-			if ( ! PyLong_Check( value ) &&  ! PyInt_Check( value ) )
+			if ( ! PyLong_Check( value ) )
 			{
-				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - args must be integer value." );
+				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - args must be number value." );
 				return false;
 			}
 			token.flags = PyLong_AsLong( value );
 		}
 		else if ( 0 == strcmp( keyText, "variableType" ) && Py_None != value )
 		{
-			if ( ! PyInt_Check( value ) )
+			if ( ! PyLong_Check( value ) )
 			{
-				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - variableType must be an integer." );
+				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - variableType must be a number." );
 				return false;
 			}
-			token.variableType = (VariableType) PyInt_AsLong( value );
+			token.variableType = (VariableType) PyLong_AsLong( value );
 		}
 		else if ( 0 == strcmp( keyText, "variableName" ) && Py_None != value )
 		{
-			if ( ! PyString_Check( value ) )
+			if ( ! PyUnicode_Check( value ) )
 			{
-				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - variableName must be ascii string." );
+				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - variableName must be a string." );
 				return false;
 			}
-			token.variableName = std::string( PyString_AS_STRING( value ) );
+			token.variableName = std::string( PyUnicode_AsUTF8( value ) );
 		}
 		else if ( 0 == strcmp( keyText, "propertyName" ) && Py_None != value )
 		{
-			if ( ! PyString_Check( value ) )
+			if ( ! PyUnicode_Check( value ) )
 			{
-				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - propertyName must be ascii string." );
+				PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - propertyName must be a string." );
 				return false;
 			}
-			token.propertyName = std::string( PyString_AS_STRING( value ) );
+			token.propertyName = std::string(PyUnicode_AsUTF8( value ) );
 		}
 		else if ( 0 == strcmp( keyText, "kwargs" ) )
 		{
@@ -240,19 +240,22 @@ bool LoadToken( PyObject* dict, Token& token )
 			Py_ssize_t s = 0;
 			while ( PyDict_Next( value, &s, &k, &v ) )
 			{
-				if ( ! PyString_Check( k ) )
+				if ( ! PyUnicode_Check( v ) && ! PyLong_Check( v ) )
+				{
+					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be string or number." );
+					return false;
+				}
+
+				PyObject* keyAsAscii = PyUnicode_AsASCIIString( k );
+
+				if ( !keyAsAscii )
 				{
 					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg key must be ascii string." );
 					return false;
 				}
 				
-				if ( ! PyString_Check( v ) && ! PyInt_Check( v ) && ! PyUnicode_Check( v ) )
-				{
-					PyErr_SetString( PyExc_TypeError, "Localization::ParseToken - kwarg value must be unicode, string or int." );
-					return false;
-				}
-
-				std::string key( PyString_AS_STRING( k ) );
+				std::string key( PyBytes_AsString( keyAsAscii ) );
+				Py_DecRef( keyAsAscii );
 
 				if ( ! token.kwargs )
 				{
@@ -544,7 +547,10 @@ switch( languageID )
 
 std::wstring PyUnicodeToWString( PyObject* unicode )
 {
-    return std::wstring( reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( unicode ) ), PyUnicode_GET_SIZE( unicode ) );
+	wchar_t* tmp = PyUnicode_AsWideCharString( unicode, nullptr );
+	std::wstring ss( tmp );
+	PyMem_Free( tmp );
+	return ss;
 }
 
 #ifdef __APPLE__
@@ -597,11 +603,20 @@ CFStringRef ToStringRef( const std::wstring& string )
 //-----------------------------------------------------------------------------
 // The globals
 //-----------------------------------------------------------------------------
-static void StartDLL()
+static struct PyModuleDef ModuleDef =
+{
+	PyModuleDef_HEAD_INIT,
+	CCP_STRINGIZE( CCP_CONCATENATE( _evelocalization, CCP_BUILD_FLAVOR ) ),
+	"",
+	-1,
+	NULL
+};
+
+static PyObject* StartDLL()
 {
 	BeClasses->RegisterClasses( BlueRegistration::GetClassRegs() );
 	
-	PyObject* module = Py_InitModule( CCP_STRINGIZE( CCP_CONCATENATE( _evelocalization, CCP_BUILD_FLAVOR ) ), NULL );
+	PyObject* module = PyModule_Create( &ModuleDef );
 	
 	PyMethodDef pmd[] = { 
 							{ 
@@ -634,16 +649,18 @@ static void StartDLL()
 						  BlueRegistration::GetEnumRegs() );
 	
 	//Init 3rd party libs here.
+
+	return module;
 }
 
 #ifdef _WIN32
-BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
+BOOL APIENTRY DllMain( HINSTANCE instance, DWORD reason, LPVOID )
 {
-	if (reason == DLL_PROCESS_ATTACH)
+	if ( reason == DLL_PROCESS_ATTACH )
 	{
-		DisableThreadLibraryCalls(instance);
+		DisableThreadLibraryCalls( instance );
 	}
-	else if (reason == DLL_PROCESS_DETACH)
+	else if ( reason == DLL_PROCESS_DETACH )
 	{
 		;
 	}
@@ -654,13 +671,14 @@ BOOL APIENTRY DllMain(HINSTANCE instance, DWORD reason, LPVOID)
 //-----------------------------------------------------------------------------
 // init - python dll module entry function
 //-----------------------------------------------------------------------------
-extern "C" void
+extern "C"
 #ifdef _WIN32
-__declspec(dllexport)
+__declspec( dllexport )
 #else
 __attribute__((visibility ("default")))
 #endif
-CCP_CONCATENATE( init_evelocalization, CCP_BUILD_FLAVOR )()
+PyObject*
+CCP_CONCATENATE( PyInit__evelocalization, CCP_BUILD_FLAVOR )()
 {
-	StartDLL();
+	return StartDLL();
 }

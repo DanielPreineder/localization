@@ -52,45 +52,47 @@ PyObject* PyParse( PyObject* module, PyObject* args, PyObject* kwargs )
 {
 	std::wstringstream retVal;
 	TokenContainer tokens;
+	PyObject* sourceTextObject;
 	wchar_t* sourceText;
 	PyObject* tokenDict;
 	char* languageCode;
 
-	if ( PyArg_ParseTuple( args, "usO", &sourceText, &languageCode, &tokenDict ) )
+	if ( !PyArg_ParseTuple( args, "UsO", &sourceTextObject, &languageCode, &tokenDict ) )
 	{
-		LanguageID langID = CodeToLanguageID( languageCode );
+		return nullptr;
+	}
+	sourceText = PyUnicode_AsWideCharString(sourceTextObject, nullptr);
+	LanguageID langID = CodeToLanguageID( languageCode );
 
-		LanguageMapCit lang = g_settings.languages.find( langID );
-		if ( lang == g_settings.languages.cend() )
-		{
-			char tmp[128];
-			sprintf_s(tmp, "Language %s does not exist.", languageCode );
-			PyErr_SetString( PyExc_KeyError, tmp );
-			return NULL;
-		}
-
-		MessageData md;
-		if ( LoadTokens( tokenDict, md ) )
-		{
-			std::wstringstream text;
-			if ( md.tokens )
-			{
-				bool ret = Parse( sourceText, *(lang->second), *( md.tokens ), kwargs, text );
-				if ( ! ret )
-				{
-					// Actual exception object should be set in Parse.
-					return NULL;
-				}
-			}
-			else
-			{
-				text << sourceText;
-			}
-			std::wstring tmp = text.str();
-			return PyUnicode_FromWideChar( tmp.c_str(), tmp.size() );			
-		}
+	LanguageMapCit lang = g_settings.languages.find( langID );
+	if ( lang == g_settings.languages.cend() )
+	{
+		char tmp[128];
+		sprintf_s(tmp, "Language %s does not exist.", languageCode );
+		PyErr_SetString( PyExc_KeyError, tmp );
+		return nullptr;
 	}
 
-	return NULL;
+	MessageData md;
+	if ( !LoadTokens( tokenDict, md ) )
+	{
+		return nullptr;
+	}
+	std::wstringstream text;
+	if ( md.tokens )
+	{
+		bool ret = Parse( sourceText, *(lang->second), *( md.tokens ), kwargs, text );
+		if ( ! ret )
+		{
+			// Actual exception object should be set in Parse.
+			return nullptr;
+		}
+	}
+	else
+	{
+		text << sourceText;
+	}
+	std::wstring tmp = text.str();
+	return PyUnicode_FromWideChar( tmp.c_str(), tmp.size() );
 }
 // Mapping from localization.cpp due to kwargs

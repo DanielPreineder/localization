@@ -26,7 +26,7 @@ const unsigned int GROUPING_VALUE = 3;
 // -------------------------------------------------------------
 bool SimpleValueFormatter( const Token& token, const Language& lang, PyObject* value, PyObject* kwargs, std::wstringstream& retVal )
 {
-	PyObject* unicodeValue = PyObject_Unicode( value );
+	PyObject* unicodeValue = PyObject_Str( value );
 	if ( ! unicodeValue )
 	{
 		retVal << "Error converting value in SimpleValueFormatter";
@@ -125,36 +125,39 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 			}
 
 			size_t len = PySequence_Fast_GET_SIZE( linkData );
-			if (len == 0)
+			if ( len == 0 )
 			{
 				Py_DECREF( linkData );
 				return false;
 			}
 
-			PyObject* tmp = PyObject_Unicode( PySequence_Fast_GET_ITEM( linkData, 0 ) );
-			if ( ! tmp )
+			PyObject* tmp = PyObject_Str(PySequence_Fast_GET_ITEM(linkData, 0));
+			if (!tmp)
 			{
-				Py_DECREF( linkData );
+				Py_DECREF(linkData);
 				return false;
 			}
-			retVal << L"<a href=" << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( tmp ) ) << L":";
-
+			wchar_t* tmpWChar = PyUnicode_AsWideCharString( tmp, nullptr );
+			retVal << L"<a href=" << tmpWChar << L":";
+			PyMem_Free( tmpWChar );
 			Py_XDECREF( tmp );
 
-			for ( size_t i = 1; i < len; ++i )
+			for (size_t i = 1; i < len; ++i)
 			{
-				if ( i > 1 )
+				if (i > 1)
 				{
 					retVal << L"//";
 				}
 
-				PyObject* tmp = PyObject_Unicode( PySequence_Fast_GET_ITEM( linkData, i ) );
-				if ( ! tmp )
+				PyObject* tmp = PyObject_Str(PySequence_Fast_GET_ITEM(linkData, i));
+				if (!tmp)
 				{
-					Py_DECREF( linkData );
+					Py_DECREF(linkData);
 					return false;
 				}
-				retVal << reinterpret_cast<const wchar_t*>( PyUnicode_AS_UNICODE( tmp ) );
+				wchar_t* tmpWideChar = PyUnicode_AsWideCharString( tmp, nullptr );
+				retVal << tmpWideChar;
+				PyMem_Free( tmpWideChar );
 				Py_XDECREF( tmp );
 			}
 
@@ -208,23 +211,25 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 		return false;
 	}
 
-	format = reinterpret_cast<wchar_t*>( PyUnicode_AsUnicode( cit->second ) );
-	if ( ! format )
+	// Get the formatstring, remember to free the allocated memory on all return code paths.
+	format = PyUnicode_AsWideCharString( cit->second, nullptr );
+	if( !format )
 	{
+		PyMem_Free( format ); // Freeing memory allocated by PyUnicode_AsWideCharString()
 		return false;
 	}
 
 	if ( PyTuple_Check( value ) && PyTuple_GET_SIZE( value ) == 9 )
 	{
-		timeInfo.tm_year  = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 0 ) );
-		timeInfo.tm_mon   = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 1 ) );
-		timeInfo.tm_mday  = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 2 ) );
-		timeInfo.tm_hour  = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 3 ) );
-		timeInfo.tm_min   = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 4 ) );
-		timeInfo.tm_sec   = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 5 ) );
-		timeInfo.tm_wday  = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 6 ) );
-		timeInfo.tm_yday  = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 7 ) );
-		timeInfo.tm_isdst = ( int ) PyInt_AS_LONG ( PyTuple_GET_ITEM( value, 8 ) );
+		timeInfo.tm_year  = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 0 ) );
+		timeInfo.tm_mon   = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 1 ) );
+		timeInfo.tm_mday  = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 2 ) );
+		timeInfo.tm_hour  = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 3 ) );
+		timeInfo.tm_min   = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 4 ) );
+		timeInfo.tm_sec   = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 5 ) );
+		timeInfo.tm_wday  = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 6 ) );
+		timeInfo.tm_yday  = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 7 ) );
+		timeInfo.tm_isdst = ( int ) PyLong_AS_LONG ( PyTuple_GET_ITEM( value, 8 ) );
 		// Normalize to years since 1900, months since january, days since Sunday
 		timeInfo.tm_year -= 1900;
 		timeInfo.tm_mon  -= 1;
@@ -247,24 +252,6 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 		timeInfo.tm_yday = 1;
 		timeInfo.tm_isdst = -1;
 	}
-	//Python maxint on macOS is 64bit which produces numbers of type int64 when parsed through YAML rather than long produced on Windows.
-    else if ( ( PyInt_Check( value ) ) && ( sizeof ( long int ) == 8 ) )
-    {
-        Be::Time timeVal = PyInt_AsLong( value );
-
-        CcpDateTime dt;
-        TimeAsDateTime( dt, timeVal );
-
-        timeInfo.tm_year = dt.year - 1900;
-        timeInfo.tm_mon = dt.month - 1;
-        timeInfo.tm_mday = dt.day;
-        timeInfo.tm_hour = dt.hour;
-        timeInfo.tm_min = dt.minute;
-        timeInfo.tm_sec = dt.second;
-        timeInfo.tm_wday = dt.dayOfWeek;
-        timeInfo.tm_yday = 1;
-        timeInfo.tm_isdst = -1;
-    }
 	else if ( PyFloat_Check( value ) )
 	{
 		time_t x = ( time_t ) PyFloat_AS_DOUBLE( value );
@@ -273,6 +260,7 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	else
 	{
 		PyErr_SetString( PyExc_TypeError, "Time value must be float (aka python time), long (aka blue time) or tuple (from time info)." );
+		PyMem_Free( format ); // Freeing memory allocated by PyUnicode_AsWideCharString()
 		return false;
 	}
 
@@ -302,7 +290,8 @@ bool DateTimeFormatter( const Token& token, const Language& lang, PyObject* valu
 	{
 		wcsftime( buffer, STACK_BUFFER_SIZE_LARGE, format, &timeInfo );
 	}
-	std::wstring buf(buffer);
+	std::wstring buf( buffer );
+	PyMem_Free( format ); // Freeing memory allocated by PyUnicode_AsWideCharString()
 
 	return SimpleValueFormatter( token, lang, buf, kwargs, retVal );
 }
@@ -326,10 +315,6 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 	if ( PyLong_Check( value ) )
 	{
 		msgID = PyLong_AsUnsignedLongLong( value );
-	}
-	else if ( PyInt_Check( value ) )
-	{
-		msgID = PyInt_AsUnsignedLongLongMask( value );
 	}
 	else
 	{
@@ -405,7 +390,7 @@ bool MessageFormatter( const Token& token, const Language& lang, PyObject* value
 // Return value:
 //   The double value rounded to decimals.
 // -------------------------------------------------------------
-double round(double val, unsigned int decimals)
+double round( double val, unsigned int decimals )
 {
 	//we obtain the sign to calculate positive always
 	double sign = val != 0.0 ? fabs( val ) / val : 1.0;
@@ -453,15 +438,7 @@ size_t FormatNumber( wchar_t (&out)[STACK_BUFFER_SIZE_LARGE],
 	out[0] = 0x0000;
 
 	// wsprintf does not support floating point numbers correctly, alas we need to use _snwprintf
-	if ( PyInt_Check( value ) )
-	{
-#ifdef _WIN32
-		len = _snwprintf_s( number, STACK_BUFFER_SIZE_LARGE, L"%I32d", PyInt_AS_LONG( value ) );
-#else
-        len = swprintf( number, STACK_BUFFER_SIZE_LARGE, L"%ld", PyInt_AS_LONG( value ) );
-#endif
-	}
-	else if ( PyLong_Check( value ) )
+	if ( PyLong_Check( value ) )
 	{
 #ifdef _WIN32
 		len = _snwprintf_s( number, STACK_BUFFER_SIZE_LARGE, L"%I64d", PyLong_AsLongLong( value ) );
@@ -571,30 +548,15 @@ bool NumericFormatter( const Token& token, const Language& lang, PyObject* value
 		retVal << tmp;
 		return true;
 	}
-	else if ( PyString_Check( value ) )
-	{
-		PyObject* o = PyObject_Unicode( value );
-		if ( o )
-		{
-			std::wstring tmp( PyUnicodeToWString( o ) );
-			retVal << tmp;
-		}
-		else
-		{
-			return false;
-		}
-		Py_XDECREF( o );
-		return true;
-	}
 
 	if ( TOKENFLAG_DECIMALPLACES == ( token.flags & TOKENFLAG_DECIMALPLACES ) )
 	{
-		decimalPlaces = std::max( 0, std::min( 9, int( PyInt_AS_LONG( token.kwargs->find("decimalPlaces")->second ) ) ) );
+		decimalPlaces = std::max( 0, std::min( 9, int( PyLong_AS_LONG( token.kwargs->find("decimalPlaces")->second ) ) ) );
 	}
 
 	if ( TOKENFLAG_LEADINGZEROES == ( token.flags & TOKENFLAG_LEADINGZEROES ) )
 	{
-		leadingZeroes = std::max( 0, std::min( 9, int( PyInt_AS_LONG( token.kwargs->find("leadingZeroes")->second ) ) ) );
+		leadingZeroes = std::max( 0, std::min( 9, int( PyLong_AS_LONG( token.kwargs->find("leadingZeroes")->second ) ) ) );
 	}
 
 	result = FormatNumber( out, value, decimalPlaces, leadingZeroes, ( TOKENFLAG_USEGROUPING == ( token.flags & TOKENFLAG_USEGROUPING ) ) );

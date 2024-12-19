@@ -115,7 +115,7 @@ void WrapPointList::BuildItemRunList()
 //     http://msdn.microsoft.com/en-us/library/dd368556.aspx
 //     http://msdn.microsoft.com/en-us/library/dd319118.aspx
 // -------------------------------------------------------------
-bool WrapPointList::TextAnalyze ( WCHAR* wstr, int wlen, SCRIPT_CONTROL* scriptControl, SCRIPT_STATE* scriptState )
+bool WrapPointList::TextAnalyze ( WCHAR* wstr, size_t wlen, SCRIPT_CONTROL* scriptControl, SCRIPT_STATE* scriptState )
 {
 	CCP_STATS_ZONE( __FUNCTION__ );
 

@@ -4,6 +4,8 @@
 
 #pragma once
 
+#define PY_SSIZE_T_CLEAN
+
 #include <sstream>
 
 #ifdef _WIN32
