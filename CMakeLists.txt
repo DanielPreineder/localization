@@ -2,24 +2,13 @@ cmake_minimum_required(VERSION 3.16)
 
 project(EveLocalization VERSION 1.0.0)
 
-if(NOT DEFINED ENV{CCP_EVE_PERFORCE_BRANCH_PATH})
-    message(FATAL_ERROR "Missing required environment variable CCP_EVE_PERFORCE_BRANCH_PATH")
-elseif(NOT IS_ABSOLUTE $ENV{CCP_EVE_PERFORCE_BRANCH_PATH})
-    message(FATAL_ERROR "CCP_EVE_PERFORCE_BRANCH_PATH needs to be an absolute path")
-elseif(NOT EXISTS $ENV{CCP_EVE_PERFORCE_BRANCH_PATH})
-    message(FATAL_ERROR "CCP_EVE_PERFORCE_BRANCH_PATH is pointing at a non-existing location $ENV{CCP_EVE_PERFORCE_BRANCH_PATH}")
-elseif(NOT IS_DIRECTORY $ENV{CCP_EVE_PERFORCE_BRANCH_PATH})
-    message(FATAL_ERROR "CCP_EVE_PERFORCE_BRANCH_PATH needs to be a directory")
-else()
-    message(STATUS "Using CCP_EVE_PERFORCE_BRANCH_PATH located at $ENV{CCP_EVE_PERFORCE_BRANCH_PATH}")
-endif()
+include(cmake/CcpGlobalSettings.cmake)
+include(cmake/CcpTargetConfigurations.cmake)
+include(cmake/CcpPackageConfigHelpers.cmake)
 
-file(TO_CMAKE_PATH "$ENV{CCP_EVE_PERFORCE_BRANCH_PATH}" BRANCH_ROOT_DIR)
-list(INSERT CMAKE_MODULE_PATH 0 ${BRANCH_ROOT_DIR}/cmake)
-include(CcpGlobalSettings)
-
-find_package(Blue CONFIG REQUIRED)
-find_package(BlueExposure CONFIG REQUIRED)
+find_package(carbon-blueexposure REQUIRED CONFIG)
+find_package(carbon-blue REQUIRED CONFIG)
+find_package(carbon-exefile-interpreter REQUIRED CONFIG)
 
 set(headers
     autoversion.h
@@ -76,10 +65,20 @@ elseif(WIN32)
 
 endif()
 
-if(WIN32)
-    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.bat")
-elseif(APPLE)
-    set(PYTHON_INTERPRETER_PATH "${BRANCH_ROOT_DIR}/eve/client/pythonInterpreter.sh")
+ccp_prepare_exefile(
+        TARGET EveLocalization
+        BUILD_TYPE ${CMAKE_BUILD_TYPE}
+        COMMAND_OUT PYTHON_INTERPRETER
+        PYTHONPATH_OUT PYTHONPATH
+        TEST_DIR $<TARGET_FILE_DIR:EveLocalization>
+)
+
+if (WIN32)
+    add_custom_command(
+            TARGET EveLocalization POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:EveLocalization> $<TARGET_FILE_DIR:EveLocalization>
+            COMMAND_EXPAND_LISTS
+    )
 endif()
 
 # Provide an install target iff this is the top level project only
@@ -91,10 +90,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         list(APPEND PYTHON_TESTS test_eveLocalization.py)
         foreach(PYTHON_TEST ${PYTHON_TESTS})
             add_test(NAME ${PYTHON_TEST}
-                    COMMAND ${PYTHON_INTERPRETER_PATH} ${PYTHON_TEST}
+                    COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${PYTHON_TEST}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
             )
-            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:EveLocalization>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
         endforeach()
     endif()
 
