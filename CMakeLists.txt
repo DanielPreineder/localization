@@ -65,35 +65,43 @@ elseif(WIN32)
 
 endif()
 
-ccp_prepare_exefile(
-        TARGET EveLocalization
-        BUILD_TYPE ${CMAKE_BUILD_TYPE}
-        COMMAND_OUT PYTHON_INTERPRETER
-        PYTHONPATH_OUT PYTHONPATH
-        TEST_DIR $<TARGET_FILE_DIR:EveLocalization>
-)
-
-if (WIN32)
-    add_custom_command(
-            TARGET EveLocalization POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:EveLocalization> $<TARGET_FILE_DIR:EveLocalization>
-            COMMAND_EXPAND_LISTS
-    )
-endif()
-
 # Provide an install target iff this is the top level project only
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_TESTING "Build tests. Enabled by default." ON)
     include(CTest)
     if(BUILD_TESTING)
+        ccp_prepare_interpreter(
+                TARGET EveLocalization
+                BUILD_TYPE ${CMAKE_BUILD_TYPE}
+                COMMAND_OUT PYTHON_INTERPRETER
+                PYTHONPATH_OUT PYTHONPATH
+                TEST_DIR $<TARGET_FILE_DIR:EveLocalization>
+                BLUE_DIR_OUT BLUE_LOCATION_DIR
+        )
+
+        if (WIN32)
+            add_custom_command(
+                    TARGET EveLocalization POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:EveLocalization> $<TARGET_FILE_DIR:EveLocalization>
+                    COMMAND_EXPAND_LISTS
+            )
+            set(TEST_PYTHONPATH ${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python)
+            set(TEST_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests)
+            set(TEST_FILE_LOC "")
+        elseif(APPLE)
+            set(TEST_PYTHONPATH ${PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR}/python)
+            set(TEST_WORKING_DIRECTORY ${BLUE_LOCATION_DIR})
+            set(TEST_FILE_LOC "${CMAKE_CURRENT_LIST_DIR}/python/eveLocalization/tests/")
+        endif ()
+
         # add the python tests
         list(APPEND PYTHON_TESTS test_eveLocalization.py)
         foreach(PYTHON_TEST ${PYTHON_TESTS})
             add_test(NAME ${PYTHON_TEST}
-                    COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${PYTHON_TEST}
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
+                    COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${TEST_FILE_LOC}${PYTHON_TEST}
+                    WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
             )
-            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${TEST_PYTHONPATH};BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
         endforeach()
     endif()
 
