@@ -85,9 +85,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:EveLocalization> $<TARGET_FILE_DIR:EveLocalization>
                     COMMAND_EXPAND_LISTS
             )
-            set(TEST_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests)
-        elseif(APPLE)
-            set(TEST_WORKING_DIRECTORY ${BLUE_LOCATION_DIR})
         endif ()
 
         # add the python tests
@@ -95,13 +92,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         foreach(PYTHON_TEST ${PYTHON_TESTS})
             add_test(NAME ${PYTHON_TEST}
                     COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${CMAKE_CURRENT_LIST_DIR}/python/eveLocalization/tests/${PYTHON_TEST}
-                    WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
             )
-            if(WIN32)
-                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
-            elseif(APPLE)
-                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
-            endif()
+
+            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<SHELL_PATH:${PYTHONPATH};${CMAKE_CURRENT_SOURCE_DIR}/python>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
 
         endforeach()
     endif()
