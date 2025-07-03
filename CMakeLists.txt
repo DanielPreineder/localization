@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.30)
 
 project(EveLocalization VERSION 1.0.0)
 
@@ -95,7 +95,11 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests
             )
 
-            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=$<SHELL_PATH:${PYTHONPATH};${CMAKE_CURRENT_SOURCE_DIR}/python>;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            if(WIN32)
+                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            elseif(APPLE)
+                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            endif()
 
         endforeach()
     endif()
