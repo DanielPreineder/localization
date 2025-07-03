@@ -1,20 +1,20 @@
 {
   "dependencies": [
     {
-      "name": "carbon-blue"
+      "name": "carbon-blue",
+      "version>=": "4.1.0-alpha.1"
     },
     {
-      "name": "carbon-blueexposure"
+      "name": "carbon-blueexposure",
+      "version>=": "2.0.3-alpha.1#2"
     },
     {
-      "name": "python3-prebuilt"
-    },
-    {
-      "name": "carbon-exefile",
-      "host": true
+      "name": "python3-prebuilt",
+      "version>=": "3.12.3#3"
     },
     {
       "name": "carbon-exefile-interpreter",
+      "version>=": "1.0.1#1",
       "host": true
     }
   ],
