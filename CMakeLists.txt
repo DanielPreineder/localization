@@ -75,7 +75,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
                 BUILD_TYPE ${CMAKE_BUILD_TYPE}
                 COMMAND_OUT PYTHON_INTERPRETER
                 PYTHONPATH_OUT PYTHONPATH
-                TEST_DIR $<TARGET_FILE_DIR:EveLocalization>
+                RUN_DIR $<TARGET_FILE_DIR:EveLocalization>
                 BLUE_DIR_OUT BLUE_LOCATION_DIR
         )
 
@@ -85,39 +85,55 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
                     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:EveLocalization> $<TARGET_FILE_DIR:EveLocalization>
                     COMMAND_EXPAND_LISTS
             )
-            set(TEST_PYTHONPATH ${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python)
             set(TEST_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/eveLocalization/tests)
-            set(TEST_FILE_LOC "")
         elseif(APPLE)
-            set(TEST_PYTHONPATH ${PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR}/python)
             set(TEST_WORKING_DIRECTORY ${BLUE_LOCATION_DIR})
-            set(TEST_FILE_LOC "${CMAKE_CURRENT_LIST_DIR}/python/eveLocalization/tests/")
         endif ()
 
         # add the python tests
         list(APPEND PYTHON_TESTS test_eveLocalization.py)
         foreach(PYTHON_TEST ${PYTHON_TESTS})
             add_test(NAME ${PYTHON_TEST}
-                    COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${TEST_FILE_LOC}${PYTHON_TEST}
+                    COMMAND ${PYTHON_INTERPRETER} /inherit /buildflavor=$<LOWER_CASE:$<CONFIG>> /py ${CMAKE_CURRENT_LIST_DIR}/python/eveLocalization/tests/${PYTHON_TEST}
                     WORKING_DIRECTORY ${TEST_WORKING_DIRECTORY}
             )
-            set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${TEST_PYTHONPATH};BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            if(WIN32)
+                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}\;${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            elseif(APPLE)
+                set_tests_properties(${PYTHON_TEST} PROPERTIES ENVIRONMENT "PYTHONPATH=${PYTHONPATH}:${CMAKE_CURRENT_SOURCE_DIR}/python;BUILDFLAVOR=$<LOWER_CASE:$<CONFIG>>")
+            endif()
+
         endforeach()
     endif()
 
-    # Install rule to ensure that our runtime and linker files are in the expected, platform-specific folders
-    install(
-        TARGETS EveLocalization
-        CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}
-        ARCHIVE DESTINATION lib/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
-        LIBRARY DESTINATION lib/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
-        RUNTIME DESTINATION bin/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
-    )
+    option(INSTALL_TO_MONOLITH "Install this package to a perforce branch vendor folder - provided for backwards compatability" ON)
+    if (INSTALL_TO_MONOLITH)
+        # Install rule to ensure that our runtime and linker files are in the expected, platform-specific folders
+        install(
+                TARGETS EveLocalization
+                CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}
+                ARCHIVE DESTINATION lib/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
+                LIBRARY DESTINATION lib/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
+                RUNTIME DESTINATION bin/${CCP_PLATFORM}/${CCP_ARCHITECTURE}/${CCP_TOOLSET}/
+        )
 
-    # Install python package
-    install(DIRECTORY python/ DESTINATION python
-        FILES_MATCHING
-        PATTERN "*.py"
-        PATTERN "package.yaml"
-    )
+        # Install python package
+        install(DIRECTORY python/ DESTINATION python
+                FILES_MATCHING
+                PATTERN "*.py"
+                PATTERN "package.yaml"
+        )
+    else()
+        # Install rule to ensure that our runtime and linker files are in the expected, platform-specific folders
+        install(
+                TARGETS EveLocalization
+                CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES}
+                ARCHIVE DESTINATION lib/
+                LIBRARY DESTINATION lib/
+                RUNTIME DESTINATION bin/
+        )
+
+        # Install python package
+        install(DIRECTORY python/eveLocalization DESTINATION bin/python)
+    endif()
 endif()
