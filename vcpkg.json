@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "carbon-blue",
-      "version>=": "4.1.0-alpha.1#2"
+      "version>=": "4.1.0-alpha.2"
     },
     {
       "name": "carbon-blueexposure",
