@@ -564,7 +564,8 @@ class LocalizationUnittests(unittest.TestCase):
         result = el.Parse(sentence, "en-us", {})
         self.assertEqual(result, sentence)
 
-    def testWrapPointsForTextWithInvalidUnicodeCharacters(self):
+    @unittest.skipUnless(sys.platform.startswith("darwin"), "requires macOS")
+    def testWrapPointsForTextWithInvalidUnicodeCharactersDontCrashOnMacOS(self):
         """ See https://ccpgames.atlassian.net/browse/PLAT-9947
         """
         # the sample text was extracted from the input that caused the crash
