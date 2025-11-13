@@ -8,7 +8,6 @@ include(cmake/CcpPackageConfigHelpers.cmake)
 
 find_package(carbon-blueexposure REQUIRED CONFIG)
 find_package(carbon-blue REQUIRED CONFIG)
-find_package(carbon-exefile-interpreter REQUIRED CONFIG)
 
 set(headers
     autoversion.h
@@ -70,6 +69,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     option(BUILD_TESTING "Build tests. Enabled by default." ON)
     include(CTest)
     if(BUILD_TESTING)
+        find_package(carbon-exefile-interpreter REQUIRED CONFIG)
         ccp_prepare_interpreter(
                 TARGET EveLocalization
                 BUILD_TYPE ${CMAKE_BUILD_TYPE}
