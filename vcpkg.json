@@ -2,19 +2,19 @@
   "dependencies": [
     {
       "name": "carbon-blue",
-      "version>=": "4.1.2"
+      "version>=": "4.2.0"
     },
     {
       "name": "carbon-blueexposure",
-      "version>=": "2.0.4"
+      "version>=": "2.1.0"
     },
     {
-      "name": "python3-prebuilt",
-      "version>=": "3.12.3#3"
+      "name": "python3",
+      "version>=": "3.12.9#1"
     },
     {
       "name": "carbon-exefile-interpreter",
-      "version>=": "1.0.2",
+      "version>=": "1.1.0",
       "host": true
     }
   ],
@@ -22,6 +22,10 @@
     {
       "name": "protobuf",
       "version": "3.6.0.1"
+    },
+    {
+      "name": "openssl",
+      "version": "1.1.1k#8"
     }
   ]
 }
