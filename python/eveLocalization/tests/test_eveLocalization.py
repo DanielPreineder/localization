@@ -456,6 +456,12 @@ class LocalizationUnittests(unittest.TestCase):
         self.assertTrue(result == expectedResult,
                         "Result did not match input: %s != %s" % (result, expectedResult))
 
+    def testMissingKeywordArgumentError(self):
+        with self.assertRaises(TypeError) as exc:
+            el.GetMessageByID(14, "en-us", linktext="Click Here!")
+
+        self.assertEqual(str(exc.exception), "Missing required keyword argument 'linkdata'.")
+
 
     def testNumericFormatter(self):
         """

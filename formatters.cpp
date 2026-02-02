@@ -113,6 +113,7 @@ bool SimpleValueFormatter( const Token& token, const Language& lang, std::wstrin
 		PyObject* linkData = PyDict_GetItem( kwargs, cit->second );
 		if ( ! linkData )
 		{
+			PyErr_Format( PyExc_TypeError, "Missing required keyword argument '%S'.", cit->second );
 			return false;
 		}
 
