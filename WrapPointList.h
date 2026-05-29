@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #pragma once
 #ifndef WrapPointList_H
 #define WrapPointList_H

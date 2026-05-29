@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 // localization.cpp : Defines the entry point for the DLL application.
 //
 

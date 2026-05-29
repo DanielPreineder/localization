@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #pragma once
 #ifndef Parser_H
 #define Parser_H

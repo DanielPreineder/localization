@@ -1,4 +1,4 @@
-# Localization performance benchmarks Copyright (c) 2012 CCP
+# Copyright © 2012 CCP ehf.
 
 """
 You can run this from exefileInterpreter like this, assuming its batchfile is located in eve\client:
@@ -16,7 +16,7 @@ comparing MLS against Cerberus. There are no proper earlier records of performan
 you will want to keep track of them somewhere.
 """
 
-# hack for our bloody annoying socket module modification, otherwise nasty won't import socketGPS.py
+# needed for our bloody annoying socket module modification, otherwise nasty won't import socketGPS.py
 import socket
 from eveprefs import prefs, boot
 
@@ -32,7 +32,7 @@ import telemetry
 import logging
 import timeit
 
-# keep me alive flag, otherwise we get killed after nasty is done bootstrapping (wtf?)
+# keep me alive flag, otherwise we get killed after nasty is done bootstrapping
 _running = True
 
 logger = logging.getLogger()

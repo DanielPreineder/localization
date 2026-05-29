@@ -1,3 +1,4 @@
+// Copyright © 2025 CCP ehf.
 package Windows
 
 import jetbrains.buildServer.configs.kotlin.DslContext
@@ -206,7 +207,7 @@ class CarbonBuildWindows(buildName: String, configType: String, preset: String) 
             vcsRootExtId = "${DslContext.settingsRootId.id}"
             provider = github {
                 authType = token {
-                    token = "%GITHUB_TEAMCITY_TOKEN%"
+                    token = "%GITHUB_CARBON_PAT%"
                 }
                 filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
             }
@@ -215,7 +216,7 @@ class CarbonBuildWindows(buildName: String, configType: String, preset: String) 
             publisher = github {
                 githubUrl = "https://api.github.com"
                 authType = personalToken {
-                    token = "%GITHUB_TEAMCITY_TOKEN%"
+                    token = "%GITHUB_CARBON_PAT%"
                 }
             }
         }

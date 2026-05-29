@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #pragma once
 #ifndef Collator_H
 #define Collator_H

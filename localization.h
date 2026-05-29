@@ -1,3 +1,4 @@
+// Copyright © 2014 CCP ehf.
 #pragma once
 #ifndef Localization_H
 #define Localization_H
